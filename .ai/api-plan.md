@@ -7,7 +7,6 @@ Conventions:
 - Field naming in API: camelCase; DB uses snake_case (mapped at the service layer)
 - Time fields: ISO-8601 strings in UTC (e.g., `2025-11-09T15:39:00Z`)
 - Pagination: page based, `page`, `pageSize` default 10, `total`
-- Error envelope: `{"error":{"code":"string","message":"string","details?:object}}`
 - Success envelope: resource(s) at top-level; pagination adds `pagination`
 
 ---
@@ -64,7 +63,7 @@ Conventions:
 }
 ```
 - Errors:
-  - 400 Bad Request — invalid `model`, `sourceText` outside 1000..10000, `maxCards` out of bounds (1..50)
+  - 400 Bad Request — `sourceText` outside 1000..10000
   - 500 Internal Server Error — AI service errors (logs recorded in `generation_error_logs`)
 
 Validation/business:
