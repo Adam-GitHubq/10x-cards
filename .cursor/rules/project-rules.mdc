@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+---
+
+- Tworząc komponenty Reacta zawsze stosuj tzw. Rules of Hooks
+- Rozwijaj style w oparciu o Tailwind - nie twórz dedykowanych plików CSS
+- Powtarzalne fragmenty logiki API przenoś do warstwy middleware
