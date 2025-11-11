@@ -48,14 +48,6 @@ export type GenerationBaseDto = {
 }
 
 /**
- * Rozszerzenie bazowej struktury o liczniki zaakceptowanych kart (mogą pozostać null).
- */
-export type GenerationWithAcceptanceDto = GenerationBaseDto & {
-  acceptedUneditedCount: GenerationRow['accepted_unedited_count']
-  acceptedEditedCount: GenerationRow['accepted_edited_count']
-}
-
-/**
  * Pojedyncza propozycja karty zwrócona przez LLM.
  */
 export type FlashcardProposalDto = {
@@ -83,16 +75,6 @@ export type GenerationListQueryParams = {
   createdFrom?: IsoDateString
   createdTo?: IsoDateString
 }
-
-/**
- * Lista generacji (z licznikami zaakceptowanych kart) z paginacją.
- */
-export type ListGenerationsResponseDto = PaginatedResponse<GenerationWithAcceptanceDto>
-
-/**
- * Szczegóły pojedynczej generacji.
- */
-export type GetGenerationResponseDto = GenerationWithAcceptanceDto
 
 /**
  * Pojedynczy element polecenia tworzenia kart.
@@ -197,17 +179,4 @@ export type VersionResponseDto = {
   version: string
   commit: string
   env: string
-}
-
-/**
- * Struktura błędu API.
- */
-export type ApiErrorInfo = {
-  code: string
-  message: string
-  details?: Record<string, unknown>
-}
-
-export type ApiErrorResponseDto = {
-  error: ApiErrorInfo
 }
