@@ -70,7 +70,7 @@ export type CreateGenerationResponseDto = {
 export type GenerationListQueryParams = {
   page?: number
   pageSize?: number
-  sort?: 'createdAt' | '-createdAt'
+  sort?: string
   model?: GenerationRow['model']
   createdFrom?: IsoDateString
   createdTo?: IsoDateString
@@ -119,7 +119,7 @@ export type CreateFlashcardsResponseDto = {
 export type FlashcardListQueryParams = {
   page?: number
   pageSize?: number
-  sort?: 'createdAt' | '-createdAt'
+  sort?: 'createdAt'
   order?: 'asc' | 'desc'
   source?: FlashcardSource
   generationId?: FlashcardRow['generation_id']

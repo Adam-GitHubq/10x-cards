@@ -27,9 +27,9 @@ Conventions:
 
 ### 2.0 Shared patterns
 - Pagination (list endpoints)
-  - Query: `page` default 1, `pageSize` (1..100; default 10), `sort` (default `-createdAt`), `order` (`asc`, `desc`)
+  - Query: `page` default 1, `pageSize` (1..100; default 10), `sort` (default `createdAt`), `order` (`asc`, `desc`)
   - Response: `pagination` ( `page`, `total`, `pageSize`)
-- Sorting: support `createdAt` asc/desc; default `-createdAt`
+- Sorting: support `createdAt` 
 - Filtering: resource-specific (see each endpoint)
 
 ---
@@ -50,7 +50,7 @@ Conventions:
   "generation": {
     "id": 123,
     "model": "openrouter/anthropic/claude-3.5-sonnet",
-    "sourceTextHash": "base64-sha256",
+    "sourceTextHash": "string",
     "sourceTextLength": 2450,
     "generatedCount": 20,
     "generationDuration": 1842,
@@ -133,7 +133,7 @@ Validation/business:
 #### GET /flashcards
 - Description: List user’s flashcards with filtering and pagination.
 - Query:
-  - `page` (default: 1), `pageSize` (default: 10) , `sort` (`-createdAt` default), `order` (`asc` or `desc`)
+  - `page` (default: 1), `pageSize` (default: 10) , `sort` (`createdAt` default), `order` (`asc` or `desc`)
   - Optional filters (`source`, `generation_id`)
 - Response JSON:
 ```json

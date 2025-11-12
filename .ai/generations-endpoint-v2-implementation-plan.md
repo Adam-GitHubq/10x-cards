@@ -30,7 +30,7 @@
 - Query (Zod):
   - `page` (int ≥1; domyślnie 1)
   - `pageSize` (int 1..100; domyślnie 10)
-  - `sort` (`createdAt` | `-createdAt`; domyślnie `-createdAt`)
+  - `sort` (`createdAt`)
   - `order` (`asc` | `desc`)
   - `model` (opcjonalny filtr)
   - `createdFrom`/`createdTo` (ISO, opcjonalne)
@@ -141,7 +141,7 @@ Uwagi:
 1) Schematy walidacji (Zod):
    - Plik: `src/lib/schemas/generations.ts`
      - `PostGenerationBodySchema = z.object({ sourceText: z.string().min(1000).max(10000) })`
-     - `ListGenerationsQuerySchema = z.object({ page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(10), sort: z.enum(['createdAt','-createdAt']).default('-createdAt'), model: z.string().optional(), createdFrom: z.string().datetime().optional(), createdTo: z.string().datetime().optional() })`
+     - `ListGenerationsQuerySchema = z.object({ page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(10), model: z.string().optional(), createdFrom: z.string().datetime().optional(), createdTo: z.string().datetime().optional() })`
 
 2) Util hash:
    - Plik: `src/lib/utils/hash.ts`
