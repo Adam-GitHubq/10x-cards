@@ -1,0 +1,8 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import LoginForm from "../../components/auth/LoginForm";
+---
+
+<AuthLayout title="Zaloguj się" description="Uzyskaj dostęp do generatora fiszek i zarządzaj swoimi zestawami.">
+  <LoginForm client:load />
+</AuthLayout>

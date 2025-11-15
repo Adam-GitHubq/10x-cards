@@ -49,6 +49,7 @@ OPENROUTER_API_KEY=sk-or-v1-your-api-key-here
 ```
 
 **Jak uzyskać klucze:**
+
 - Supabase: https://app.supabase.com → Settings → API
 - OpenRouter: https://openrouter.ai/keys
 
@@ -154,6 +155,7 @@ Kliknij "Generuj" i poczekaj na wygenerowane fiszki! 🎉
 ### Zasady kodowania
 
 Projekt używa AI-assisted development z regułami w:
+
 - `.cursor/rules/` - Zasady dla Cursor IDE
 - `.github/copilot-instructions.md` - Instrukcje dla GitHub Copilot
 - `.windsurfrules` - Konfiguracja Windsurf
@@ -206,6 +208,7 @@ npm test flashcardsGenerator.integration.test.ts
 ## Rozwiązywanie problemów
 
 Zobacz sekcję "Rozwiązywanie problemów" w:
+
 - [QUICKSTART.md](./QUICKSTART.md) - Podstawowe problemy
 - [INTEGRATION_SUMMARY.md](./INTEGRATION_SUMMARY.md) - Zaawansowane problemy
 - [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) - Problemy z konfiguracją
@@ -219,6 +222,7 @@ Zobacz sekcję "Rozwiązywanie problemów" w:
 5. Otwórz Pull Request
 
 **Zasady:**
+
 - Przestrzegaj zasad z `.cursor/rules/`
 - Dodaj testy dla nowych funkcjonalności
 - Zaktualizuj dokumentację

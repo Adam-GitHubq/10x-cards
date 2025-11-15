@@ -1,10 +1,6 @@
 import { useCallback, useState } from "react";
 
-import {
-  ensureApiError,
-  type ApiError,
-  updateFlashcard,
-} from "@/lib/api/flashcards";
+import { ensureApiError, type ApiError, updateFlashcard } from "@/lib/api/flashcards";
 import type { FlashcardDto, UpdateFlashcardCommand } from "@/types";
 
 type UseUpdateFlashcardResult = {
@@ -44,5 +40,3 @@ export function useUpdateFlashcard(): UseUpdateFlashcardResult {
     resetError,
   };
 }
-
-

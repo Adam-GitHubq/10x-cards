@@ -1,0 +1,8 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import RegisterForm from "../../components/auth/RegisterForm";
+---
+
+<AuthLayout title="Utwórz konto" description="Załóż darmowe konto, aby generować i zapisywać fiszki.">
+  <RegisterForm client:load />
+</AuthLayout>

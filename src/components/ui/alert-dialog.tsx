@@ -66,11 +66,7 @@ const AlertDialogDescription = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description>
 >(function AlertDialogDescription({ className, ...props }, ref) {
   return (
-    <AlertDialogPrimitive.Description
-      ref={ref}
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
+    <AlertDialogPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
   );
 });
 
@@ -102,5 +98,3 @@ export {
   AlertDialogCancel,
   AlertDialogClose,
 };
-
-

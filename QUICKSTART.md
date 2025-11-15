@@ -64,7 +64,7 @@ Jeśli wszystko działa poprawnie, powinieneś zobaczyć:
 ✅ Brak błędów w konsoli  
 ✅ 3-10 wygenerowanych fiszek  
 ✅ Pytania są różnorodne i inteligentne  
-✅ Odpowiedzi są zwięzłe i precyzyjne  
+✅ Odpowiedzi są zwięzłe i precyzyjne
 
 ## Rozwiązywanie problemów
 
@@ -73,6 +73,7 @@ Jeśli wszystko działa poprawnie, powinieneś zobaczyć:
 **Przyczyna:** Plik `.env` nie istnieje lub zmienna nie jest ustawiona.
 
 **Rozwiązanie:**
+
 1. Sprawdź czy plik `.env` jest w głównym katalogu (obok `package.json`)
 2. Sprawdź czy nie ma literówki w nazwie zmiennej
 3. Zrestartuj serwer (`Ctrl+C` i `npm run dev`)
@@ -82,6 +83,7 @@ Jeśli wszystko działa poprawnie, powinieneś zobaczyć:
 **Przyczyna:** Klucz jest nieprawidłowy lub wygasł.
 
 **Rozwiązanie:**
+
 1. Sprawdź czy klucz zaczyna się od `sk-or-v1-`
 2. Wygeneruj nowy klucz na https://openrouter.ai/keys
 3. Upewnij się, że nie ma spacji przed/po kluczu
@@ -91,6 +93,7 @@ Jeśli wszystko działa poprawnie, powinieneś zobaczyć:
 **Przyczyna:** Brak kredytów na koncie OpenRouter.
 
 **Rozwiązanie:**
+
 1. Przejdź do https://openrouter.ai/credits
 2. Dodaj kredyty (minimum $5)
 
@@ -99,6 +102,7 @@ Jeśli wszystko działa poprawnie, powinieneś zobaczyć:
 **Przyczyna:** Tekst ma mniej niż 50 znaków.
 
 **Rozwiązanie:**
+
 - Dodaj więcej treści do tekstu
 - Minimum to ~2-3 zdania
 
@@ -129,4 +133,3 @@ Jeśli masz problemy:
 ---
 
 **Gotowe!** 🎉 Twoja aplikacja teraz generuje fiszki przy użyciu AI!
-

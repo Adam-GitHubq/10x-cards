@@ -4,13 +4,7 @@ import { Filter, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { FlashcardSource } from "@/types";
 
 import type { FlashcardsFiltersVM } from "./types";
@@ -32,7 +26,7 @@ type FiltersFormState = {
 
 const ALL_SOURCES_OPTION = "all";
 
-const SOURCE_OPTIONS: Array<{ value: FlashcardSource; label: string }> = [
+const SOURCE_OPTIONS: { value: FlashcardSource; label: string }[] = [
   { value: "manual", label: "Manualne" },
   { value: "ai-full", label: "AI" },
   { value: "ai-edited", label: "AI (edytowane)" },
@@ -207,13 +201,7 @@ export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) 
         </div>
 
         <div className="flex items-center justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleReset}
-            disabled={busy}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={handleReset} disabled={busy}>
             <RotateCcw className="size-4" />
             Wyczyść
           </Button>
@@ -222,6 +210,3 @@ export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) 
     </div>
   );
 }
-
-
-

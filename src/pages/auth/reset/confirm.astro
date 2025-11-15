@@ -1,0 +1,37 @@
+---
+import AuthLayout from "../../../layouts/AuthLayout.astro";
+import ResetPasswordForm from "../../../components/auth/ResetPasswordForm";
+
+const searchParams = Astro.url.searchParams;
+const typeParam = searchParams.get("type");
+const redirectTarget = searchParams.get("redirectTo") ?? "/generate";
+
+const sessionOnlyTypes = new Set(["signup", "email_change", "link", "magiclink"]);
+const isSessionRestoredOnly = typeParam ? sessionOnlyTypes.has(typeParam) : false;
+
+const title = isSessionRestoredOnly ? "Sesja przywrócona" : "Ustaw nowe hasło";
+const description = isSessionRestoredOnly
+  ? "Możesz już kontynuować korzystanie z aplikacji. Jeśli to nie Ty inicjowałeś działanie, zmień hasło."
+  : "Zdefiniuj nowe hasło, aby odzyskać dostęp do swojego konta.";
+---
+
+<AuthLayout title={title} description={description}>
+  {
+    isSessionRestoredOnly ? (
+      <div class="space-y-6 rounded-2xl border border-border/40 bg-card/80 p-6 text-sm leading-relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
+        <p>Supabase potwierdził Twoją sesję. Kliknij przycisk poniżej, aby przejść do aplikacji i kontynuować pracę.</p>
+        <a
+          href={redirectTarget}
+          class="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Przejdź do aplikacji
+        </a>
+        <p class="text-xs text-muted-foreground/80">
+          Jeśli nie inicjowałeś logowania lub chcesz zmienić hasło, wyloguj się i skorzystaj z resetu hasła.
+        </p>
+      </div>
+    ) : (
+      <ResetPasswordForm client:load />
+    )
+  }
+</AuthLayout>

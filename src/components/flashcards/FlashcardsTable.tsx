@@ -53,5 +53,3 @@ export function FlashcardsTable({ items, order, onToggleOrder, onEdit, onDelete,
     </div>
   );
 }
-
-

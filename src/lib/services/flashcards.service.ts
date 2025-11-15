@@ -283,10 +283,7 @@ export async function updateFlashcard(
   const supabase = getSupabaseClient(ctx);
   const userId = resolveUserId();
 
-  const {
-    data: existing,
-    error: fetchError,
-  } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from("flashcards")
     .select("id, source")
     .eq("user_id", userId)

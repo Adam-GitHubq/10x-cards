@@ -1,0 +1,8 @@
+---
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import ResetPasswordRequestForm from "../../components/auth/ResetPasswordRequestForm";
+---
+
+<AuthLayout title="Odzyskaj dostęp" description="Podaj adres e-mail, a prześlemy instrukcję resetu hasła.">
+  <ResetPasswordRequestForm client:load />
+</AuthLayout>

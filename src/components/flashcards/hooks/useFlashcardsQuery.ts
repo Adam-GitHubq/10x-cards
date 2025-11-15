@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  ensureApiError,
-  listFlashcards,
-  type ApiError,
-} from "@/lib/api/flashcards";
+import { ensureApiError, listFlashcards, type ApiError } from "@/lib/api/flashcards";
 
 import { mapListResponseToViewModel } from "../mappers";
 import type { FlashcardsFiltersVM, FlashcardsListVM } from "../types";
@@ -30,48 +26,45 @@ export function useFlashcardsQuery(filters: FlashcardsFiltersVM) {
     latestFiltersRef.current = filters;
   }, [filters]);
 
-  const runFetch = useCallback(
-    async (activeFilters: FlashcardsFiltersVM) => {
-      abortRef.current.cancelled = false;
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-      }));
+  const runFetch = useCallback(async (activeFilters: FlashcardsFiltersVM) => {
+    abortRef.current.cancelled = false;
+    setState((prev) => ({
+      ...prev,
+      isLoading: true,
+      error: null,
+    }));
 
-      try {
-        const response = await listFlashcards({
-          page: activeFilters.page,
-          pageSize: activeFilters.pageSize,
-          sort: activeFilters.sort,
-          order: activeFilters.order,
-          source: activeFilters.source,
-          generationId: activeFilters.generationId,
-        });
+    try {
+      const response = await listFlashcards({
+        page: activeFilters.page,
+        pageSize: activeFilters.pageSize,
+        sort: activeFilters.sort,
+        order: activeFilters.order,
+        source: activeFilters.source,
+        generationId: activeFilters.generationId,
+      });
 
-        if (abortRef.current.cancelled) {
-          return;
-        }
-
-        setState({
-          isLoading: false,
-          error: null,
-          data: mapListResponseToViewModel(response),
-        });
-      } catch (error) {
-        if (abortRef.current.cancelled) {
-          return;
-        }
-
-        setState({
-          isLoading: false,
-          error: ensureApiError(error),
-          data: null,
-        });
+      if (abortRef.current.cancelled) {
+        return;
       }
-    },
-    []
-  );
+
+      setState({
+        isLoading: false,
+        error: null,
+        data: mapListResponseToViewModel(response),
+      });
+    } catch (error) {
+      if (abortRef.current.cancelled) {
+        return;
+      }
+
+      setState({
+        isLoading: false,
+        error: ensureApiError(error),
+        data: null,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     abortRef.current.cancelled = false;
@@ -100,5 +93,3 @@ export function useFlashcardsQuery(filters: FlashcardsFiltersVM) {
 }
 
 export type UseFlashcardsQueryResult = ReturnType<typeof useFlashcardsQuery>;
-
-

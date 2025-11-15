@@ -24,5 +24,3 @@ export type FlashcardsListVM = {
   items: FlashcardRowVM[];
   pagination: PaginationDto;
 };
-
-

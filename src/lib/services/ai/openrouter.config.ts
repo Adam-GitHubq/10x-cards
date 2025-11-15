@@ -72,7 +72,7 @@ const DEFAULT_MODEL_CONFIG = {
 
 /**
  * Tworzy i konfiguruje instancję serwisu OpenRouter dla generowania fiszek
- * 
+ *
  * @returns Skonfigurowana instancja OpenRouterService
  * @throws {Error} Gdy brak klucza API w zmiennych środowiskowych
  */
@@ -82,7 +82,7 @@ export function createFlashcardsOpenRouterService(): OpenRouterService {
   if (!apiKey) {
     throw new Error(
       "Brak klucza OPENROUTER_API_KEY w zmiennych środowiskowych. " +
-      "Upewnij się, że zmienna jest ustawiona w pliku .env"
+        "Upewnij się, że zmienna jest ustawiona w pliku .env"
     );
   }
 
@@ -106,7 +106,7 @@ let serviceInstance: OpenRouterService | null = null;
 /**
  * Zwraca singleton instancji serwisu OpenRouter
  * Używaj tej funkcji jeśli chcesz współdzielić jedną instancję w całej aplikacji
- * 
+ *
  * @returns Instancja OpenRouterService
  */
 export function getFlashcardsOpenRouterService(): OpenRouterService {
@@ -122,4 +122,3 @@ export function getFlashcardsOpenRouterService(): OpenRouterService {
 export function resetFlashcardsOpenRouterService(): void {
   serviceInstance = null;
 }
-

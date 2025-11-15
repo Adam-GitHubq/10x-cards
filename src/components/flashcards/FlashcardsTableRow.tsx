@@ -53,5 +53,3 @@ export const FlashcardsTableRow = memo(function FlashcardsTableRow({
     </TableRow>
   );
 });
-
-

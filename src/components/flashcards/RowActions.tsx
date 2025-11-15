@@ -21,14 +21,7 @@ export function RowActions({ id, onEdit, onDelete, busy }: RowActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={handleEdit}
-        disabled={busy}
-        className="min-w-[84px]"
-      >
+      <Button type="button" variant="outline" size="sm" onClick={handleEdit} disabled={busy} className="min-w-[84px]">
         <Pencil className="size-4" />
         Edytuj
       </Button>
@@ -39,5 +32,3 @@ export function RowActions({ id, onEdit, onDelete, busy }: RowActionsProps) {
     </div>
   );
 }
-
-

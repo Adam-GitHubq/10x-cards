@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  generateFlashcardProposals,
-  FlashcardGenerationError,
-} from "../flashcardsGenerator";
+import { generateFlashcardProposals, FlashcardGenerationError } from "../flashcardsGenerator";
 
 // Mock OpenRouter service
 vi.mock("../openrouter.config", () => ({
@@ -26,23 +23,17 @@ describe("FlashcardsGenerator - Unit Tests", () => {
 
   describe("Walidacja wejścia", () => {
     it("powinien rzucić błąd dla pustego stringa", async () => {
-      await expect(
-        generateFlashcardProposals({ sourceText: "" })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: "" })).rejects.toThrow(FlashcardGenerationError);
     });
 
     it("powinien rzucić błąd dla stringa z samymi spacjami", async () => {
-      await expect(
-        generateFlashcardProposals({ sourceText: "   " })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: "   " })).rejects.toThrow(FlashcardGenerationError);
     });
 
     it("powinien rzucić błąd dla zbyt krótkiego tekstu", async () => {
       const shortText = "To jest krótki tekst.";
 
-      await expect(
-        generateFlashcardProposals({ sourceText: shortText })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: shortText })).rejects.toThrow(FlashcardGenerationError);
     });
 
     it("powinien rzucić błąd INVALID_INPUT dla pustego tekstu", async () => {
@@ -52,9 +43,7 @@ describe("FlashcardsGenerator - Unit Tests", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(FlashcardGenerationError);
         expect((error as FlashcardGenerationError).code).toBe("INVALID_INPUT");
-        expect((error as FlashcardGenerationError).message).toContain(
-          "wymagany"
-        );
+        expect((error as FlashcardGenerationError).message).toContain("wymagany");
       }
     });
 
@@ -65,20 +54,14 @@ describe("FlashcardsGenerator - Unit Tests", () => {
       } catch (error) {
         expect(error).toBeInstanceOf(FlashcardGenerationError);
         expect((error as FlashcardGenerationError).code).toBe("TEXT_TOO_SHORT");
-        expect((error as FlashcardGenerationError).message).toContain(
-          "minimum 50"
-        );
+        expect((error as FlashcardGenerationError).message).toContain("minimum 50");
       }
     });
   });
 
   describe("Struktura błędów", () => {
     it("FlashcardGenerationError powinien zawierać wymagane pola", () => {
-      const error = new FlashcardGenerationError(
-        "Test message",
-        "TEST_CODE",
-        new Error("Original")
-      );
+      const error = new FlashcardGenerationError("Test message", "TEST_CODE", new Error("Original"));
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(FlashcardGenerationError);
@@ -117,9 +100,7 @@ describe("FlashcardsGenerator - Unit Tests", () => {
     it("powinien odrzucić tekst o długości 49 znaków", async () => {
       const text = "A".repeat(49);
 
-      await expect(
-        generateFlashcardProposals({ sourceText: text })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: text })).rejects.toThrow(FlashcardGenerationError);
     });
   });
 
@@ -138,4 +119,3 @@ describe("FlashcardsGenerator - Unit Tests", () => {
     });
   });
 });
-

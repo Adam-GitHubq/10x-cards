@@ -122,12 +122,14 @@ Jeśli używałeś wcześniejszej wersji z mockowanymi danymi:
 #### Różnice w generowanych fiszkach
 
 **Przed:**
+
 - Proste pytania "O czym mówi zdanie nr X?"
 - Maksymalnie 5 fiszek
 - Szybkie (bez opóźnień)
 - Darmowe
 
 **Po:**
+
 - Inteligentne pytania testujące zrozumienie
 - 3-10 fiszek (adaptacyjnie)
 - 2-5 sekund opóźnienia
@@ -177,4 +179,3 @@ Jeśli używałeś wcześniejszej wersji z mockowanymi danymi:
 [Unreleased]: https://github.com/your-repo/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/your-repo/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/your-repo/releases/tag/v0.1.0
-

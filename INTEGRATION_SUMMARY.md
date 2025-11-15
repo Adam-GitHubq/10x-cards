@@ -53,6 +53,7 @@ Utworzono dedykowaną konfigurację dla generowania fiszek:
 Przepisano generator aby używał OpenRouter:
 
 **Przed:**
+
 ```typescript
 // Mockowane dane - dzielenie tekstu na zdania
 const proposals = sentences.slice(0, 5).map((sentence, index) => ({
@@ -63,6 +64,7 @@ const proposals = sentences.slice(0, 5).map((sentence, index) => ({
 ```
 
 **Po:**
+
 ```typescript
 // Prawdziwe AI - wywołanie OpenRouter API
 const service = createFlashcardsOpenRouterService();
@@ -75,6 +77,7 @@ const proposals = response.content.flashcards.map((card) => ({
 ```
 
 **Nowe funkcjonalności:**
+
 - Walidacja długości tekstu (minimum 50 znaków)
 - Dedykowany typ błędu `FlashcardGenerationError`
 - 4 typy błędów: INVALID_INPUT, TEXT_TOO_SHORT, API_ERROR, NO_FLASHCARDS_GENERATED
@@ -108,11 +111,13 @@ Utworzono kompletną dokumentację:
 ### 6. ✅ Testy
 
 **Pliki:**
+
 - `src/lib/services/__tests__/openrouter.service.test.ts` - testy serwisu
 - `src/lib/services/ai/__tests__/flashcardsGenerator.unit.test.ts` - testy jednostkowe
 - `src/lib/services/ai/__tests__/flashcardsGenerator.integration.test.ts` - testy integracyjne
 
 **Pokrycie testami:**
+
 - Walidacja konfiguracji konstruktora
 - Wszystkie metody publiczne
 - Obsługa błędów
@@ -122,10 +127,12 @@ Utworzono kompletną dokumentację:
 ### 7. ✅ Dokumentacja i przykłady
 
 **Pliki:**
+
 - `src/lib/services/openrouter.README.md` - kompletna dokumentacja serwisu
 - `src/lib/services/examples/openrouter.example.ts` - 8 przykładów użycia
 
 **Zawartość:**
+
 - Instalacja i konfiguracja
 - Podstawowe użycie
 - API Reference
@@ -245,12 +252,14 @@ npm test flashcardsGenerator.integration.test.ts
 ## Przykładowe wygenerowane fiszki
 
 **Tekst wejściowy:**
+
 ```
 Fotosynteza to proces biochemiczny zachodzący w chloroplastach roślin.
 Podczas fotosyntezy energia świetlna jest przekształcana w energię chemiczną.
 ```
 
 **Przed (mock):**
+
 ```
 Q: O czym mówi zdanie nr 1?
 A: Fotosynteza to proces biochemiczny zachodzący w chloroplastach roślin.
@@ -260,6 +269,7 @@ A: Podczas fotosyntezy energia świetlna jest przekształcana w energię chemicz
 ```
 
 **Po (AI):**
+
 ```
 Q: Gdzie w roślinie zachodzi proces fotosyntezy?
 A: W chloroplastach roślin zielonych.
@@ -292,11 +302,13 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### Optymalizacja kosztów
 
 1. **Użyj tańszych modeli dla prostszych tekstów:**
+
    ```typescript
-   service.configureModel({ model: 'openai/gpt-3.5-turbo' }); // Tańszy
+   service.configureModel({ model: "openai/gpt-3.5-turbo" }); // Tańszy
    ```
 
 2. **Ogranicz max_tokens:**
+
    ```typescript
    service.configureModel({ maxTokens: 2000 }); // Zamiast 4096
    ```
@@ -308,6 +320,7 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### Problem: "Brak klucza OPENROUTER_API_KEY"
 
 **Rozwiązanie:**
+
 1. Sprawdź czy plik `.env` istnieje
 2. Sprawdź czy zmienna jest ustawiona: `OPENROUTER_API_KEY=sk-or-v1-...`
 3. Zrestartuj serwer deweloperski
@@ -315,6 +328,7 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### Problem: "Nieprawidłowy klucz API"
 
 **Rozwiązanie:**
+
 1. Wygeneruj nowy klucz na https://openrouter.ai/keys
 2. Upewnij się, że klucz zaczyna się od `sk-or-v1-`
 3. Sprawdź czy nie ma spacji na początku/końcu
@@ -322,6 +336,7 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### Problem: "Przekroczono limit zapytań"
 
 **Rozwiązanie:**
+
 1. Sprawdź saldo na https://openrouter.ai/credits
 2. Dodaj kredyty
 3. Sprawdź limity rate limit dla modelu
@@ -329,6 +344,7 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### Problem: "Tekst zbyt krótki"
 
 **Rozwiązanie:**
+
 - Minimum 50 znaków jest wymagane
 - Dodaj więcej kontekstu do tekstu
 - Lub zmień MIN_TEXT_LENGTH w flashcardsGenerator.ts
@@ -338,6 +354,7 @@ A: Proces biochemiczny, w którym rośliny przekształcają energię świetlną 
 ### 1. Dodanie wyboru modelu w UI
 
 Pozwól użytkownikom wybierać model:
+
 - Claude 3.5 Sonnet (najlepszy, droższy)
 - GPT-4 Turbo (dobry, średni koszt)
 - GPT-3.5 Turbo (szybki, tańszy)
@@ -345,6 +362,7 @@ Pozwól użytkownikom wybierać model:
 ### 2. Streaming odpowiedzi
 
 Implementacja streaming API dla lepszego UX:
+
 ```typescript
 // OpenRouter wspiera streaming
 const stream = await service.sendMessageStream(text);
@@ -356,6 +374,7 @@ for await (const chunk of stream) {
 ### 3. Personalizacja promptów
 
 Dodaj opcje dla użytkowników:
+
 - Poziom trudności (łatwy/średni/trudny)
 - Liczba fiszek (3-10)
 - Styl pytań (definicje/przykłady/zastosowania)
@@ -363,6 +382,7 @@ Dodaj opcje dla użytkowników:
 ### 4. Cache'owanie na poziomie aplikacji
 
 Dodaj Redis/Memcached dla cache'owania odpowiedzi:
+
 ```typescript
 const cacheKey = `flashcards:${sourceTextHash}`;
 const cached = await redis.get(cacheKey);
@@ -372,10 +392,9 @@ if (cached) return JSON.parse(cached);
 ### 5. Batch processing
 
 Dla wielu tekstów naraz:
+
 ```typescript
-const results = await Promise.all(
-  texts.map(text => generateFlashcardProposals({ sourceText: text }))
-);
+const results = await Promise.all(texts.map((text) => generateFlashcardProposals({ sourceText: text })));
 ```
 
 ## Podsumowanie
@@ -391,4 +410,3 @@ Aplikacja 10xCards teraz wykorzystuje prawdziwe modele AI do generowania wysokie
 - **Dokumentowany** - szczegółowa dokumentacja i przykłady
 
 Wszystkie zmiany są zgodne z zasadami projektu (clean code, early returns, obsługa błędów) i gotowe do użycia w produkcji.
-

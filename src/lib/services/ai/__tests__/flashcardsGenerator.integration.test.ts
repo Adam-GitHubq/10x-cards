@@ -1,21 +1,18 @@
 /**
  * Testy integracyjne dla generatora fiszek
- * 
+ *
  * UWAGA: Te testy wymagają prawdziwego klucza API OpenRouter
  * i będą wykonywać rzeczywiste wywołania API (co generuje koszty).
- * 
+ *
  * Aby uruchomić testy integracyjne:
  * 1. Ustaw OPENROUTER_API_KEY w pliku .env
  * 2. Uruchom: npm test -- flashcardsGenerator.integration.test.ts
- * 
+ *
  * Testy są oznaczone jako .skip - usuń .skip aby je uruchomić.
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  generateFlashcardProposals,
-  FlashcardGenerationError,
-} from "../flashcardsGenerator";
+import { generateFlashcardProposals, FlashcardGenerationError } from "../flashcardsGenerator";
 
 describe.skip("FlashcardsGenerator - Integration Tests", () => {
   describe("generateFlashcardProposals", () => {
@@ -104,21 +101,15 @@ describe.skip("FlashcardsGenerator - Integration Tests", () => {
     }, 30000);
 
     it("powinien rzucić błąd dla pustego tekstu", async () => {
-      await expect(
-        generateFlashcardProposals({ sourceText: "" })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: "" })).rejects.toThrow(FlashcardGenerationError);
 
-      await expect(
-        generateFlashcardProposals({ sourceText: "   " })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: "   " })).rejects.toThrow(FlashcardGenerationError);
     });
 
     it("powinien rzucić błąd dla zbyt krótkiego tekstu", async () => {
       const shortText = "To jest zbyt krótki tekst.";
 
-      await expect(
-        generateFlashcardProposals({ sourceText: shortText })
-      ).rejects.toThrow(FlashcardGenerationError);
+      await expect(generateFlashcardProposals({ sourceText: shortText })).rejects.toThrow(FlashcardGenerationError);
     });
 
     it("powinien obsłużyć tekst z polskimi znakami", async () => {
@@ -161,4 +152,3 @@ describe("FlashcardsGenerator - Error Handling", () => {
     }
   });
 });
-

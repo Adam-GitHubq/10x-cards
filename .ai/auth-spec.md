@@ -3,18 +3,21 @@
 Na podstawie PRD (`.ai/prd.md`, w szczególności US-001 Rejestracja i US-002 Logowanie) oraz tech stacku (`.ai/tech-stack.md`). Wniosek: w wymaganiach użytkownik prosi także o odzyskiwanie hasła – traktujemy to jako rozszerzenie zgodne z bezpieczeństwem i standardami Supabase Auth.
 
 Założenia ogólne:
+
 - Nie naruszamy istniejącej architektury, struktur katalogów i integracji (Astro 5, React 19, TypeScript 5, Tailwind 4, Shadcn/ui, Node adapter SSR).
 - Uwierzytelnianie oparte o Supabase Auth (email+hasło), z możliwością włączenia weryfikacji emaili po rejestracji.
 - Routing i SSR zgodnie z `astro.config.mjs` (output: "server", adapter node). Ochrona tras po stronie serwera z użyciem middleware.
 - Spójne kontrakty API, jasna walidacja danych wejściowych i zunifikowana obsługa błędów.
 
 Decyzje dla MVP (zgodne z PRD):
+
 - Weryfikacja e‑mail: WYŁĄCZONA, aby spełnić US‑001 (po rejestracji użytkownik jest od razu zalogowany). Możliwość WŁĄCZENIA po MVP; wtedy `redirectTo` do `/auth/reset/confirm`.
 - `generatorRoute`: `/generate`.
 - Samoobsługowe usuwanie konta i danych: WŁĄCZONE (patrz rozdziały 2 i 3).
 - Eksport moich danych (RODO): PO MVP.
 
 Otwarte niuanse do potwierdzenia:
+
 - W przyszłości możliwe dodanie social logins – poza zakresem tej specyfikacji.
 
 ---
@@ -22,6 +25,7 @@ Otwarte niuanse do potwierdzenia:
 ## 1. Architektura interfejsu użytkownika
 
 ### 1.1 Layouty i warianty widoków
+
 - `src/layouts/AuthLayout.astro`
   - Minimalistyczny layout dla stron niezalogowanych (logowanie, rejestracja, reset).
   - Zawiera branding i prostą nawigację (linki między `login/register/reset`).
@@ -34,6 +38,7 @@ Otwarte niuanse do potwierdzenia:
 Reguła: strony „auth” nie dzielą stanu z aplikacją zalogowaną; po uwierzytelnieniu wykonujemy twarde przekierowanie do `generatorRoute` (lub `next` z query string).
 
 ### 1.2 Strony Astro (routing)
+
 - `src/pages/auth/login.astro` → renderuje `<LoginForm />` (React)
 - `src/pages/auth/register.astro` → `<RegisterForm />`
 - `src/pages/auth/reset.astro` → `<ResetPasswordRequestForm />`
@@ -44,10 +49,12 @@ Reguła: strony „auth” nie dzielą stanu z aplikacją zalogowaną; po uwierz
 - `src/pages/settings/account.astro` → renderuje `<DeleteAccountSection />` (React) w ramach `AppLayout.astro`.
 
 Uwagi:
+
 - Te strony używają `AuthLayout.astro`.
 - Strony aplikacyjne (np. generator fiszek) używają `AppLayout.astro` i są chronione przez middleware (patrz 2.5).
 
 ### 1.3 Komponenty React (client-side, Shadcn/ui)
+
 - `src/components/auth/LoginForm.tsx`
   - Pola: `email`, `password`.
   - Akcja: POST do `/api/auth/login`.
@@ -73,11 +80,13 @@ Uwagi:
   - Wymagana re‑autoryzacja hasłem przed usunięciem konta.
 
 Wszystkie formularze:
+
 - UI: komponenty Shadcn/ui (`Form`, `Input`, `Button`, `Alert/Toast`), klasy Tailwind.
 - Walidacja klienta: `zod` + `react-hook-form` (schematy w `src/lib/validation/authSchemas.ts`).
 - Wysyłka danych: `fetch` do API; nie wywołujemy Supabase bezpośrednio z klienta dla akcji auth – zapewnia to spójne ciasteczka i centralną obsługę błędów po stronie serwera.
 
 ### 1.4 Walidacja i komunikaty błędów
+
 - Email:
   - Format RFC: podstawowa walidacja po stronie klienta i serwera.
   - Długość ≤ 254 znaki.
@@ -92,6 +101,7 @@ Wszystkie formularze:
   - „Jeśli konto istnieje, wysłaliśmy wiadomość…” – przy resetach (nie ujawniamy istnienia konta).
 
 ### 1.5 Najważniejsze scenariusze
+
 - Rejestracja:
   - Sukces z weryfikacją e‑mail → baner informacyjny + link do logowania.
   - Sukces bez weryfikacji → automatyczne zalogowanie i redirect.
@@ -112,7 +122,9 @@ Wszystkie formularze:
 ## 2. Logika backendowa
 
 ### 2.1 Struktura endpointów API
+
 Katalog: `src/pages/api/auth/`
+
 - `login.ts` (POST)
 - `signup.ts` (POST)
 - `logout.ts` (POST)
@@ -122,11 +134,13 @@ Katalog: `src/pages/api/auth/`
 - `account/delete.ts` (POST) – samoobsługowe usunięcie konta i danych
 
 Wspólne założenia:
+
 - Tworzymy Supabase Server Client per‑request (patrz 3.2), aby zarządzać sesją przez ciasteczka HTTP w tej samej domenie.
 - Wszystkie endpointy stosują wspólny mechanizm walidacji (Zod) i obsługi błędów (patrz 2.2 i 2.3).
 - Odpowiedzi mają jednolity kontrakt JSON, statusy HTTP i `errorCode`.
 
 ### 2.2 Modele danych i typy (wspólne)
+
 - `src/types.ts` (współdzielone)
   - `type UserSafe = { id: string; email: string | null }`
   - `type AuthErrorCode = 'invalid_credentials' | 'email_in_use' | 'email_not_verified' | 'rate_limited' | 'invalid_input' | 'unknown'`
@@ -135,6 +149,7 @@ Wspólne założenia:
   - `type SessionResponse = { user: UserSafe }`
 
 Walidacja:
+
 - `src/lib/validation/authSchemas.ts`
   - `loginSchema`: { email, password }
   - `signupSchema`: { email, password, confirmPassword }
@@ -143,6 +158,7 @@ Walidacja:
   - `deleteAccountSchema`: { currentPassword }
 
 ### 2.3 Mechanizm walidacji i obsługa wyjątków
+
 - Walidacja wejścia: Zod – na początku endpointu, z wczesnym zwrotem błędu (guard clause).
 - Mapowanie wyjątków Supabase:
   - `AuthApiError` → mapujemy do `invalid_credentials`, `email_in_use`, `email_not_verified` w zależności od komunikatu/kodu.
@@ -158,32 +174,44 @@ Walidacja:
 
 `POST /api/auth/signup`
 Żądanie:
+
 ```json
 { "email": "user@example.com", "password": "S3cure!Pass", "confirmPassword": "S3cure!Pass" }
 ```
+
 Odpowiedź (weryfikacja e‑mail ON):
+
 ```json
 { "success": true, "data": { "requiresEmailVerification": true } }
 ```
+
 Odpowiedź (weryfikacja e‑mail OFF):
+
 ```json
 { "success": true, "data": { "user": { "id": "uuid", "email": "user@example.com" } } }
 ```
+
 Błędy:
+
 ```json
 { "success": false, "errorCode": "email_in_use", "message": "Konto już istnieje." }
 ```
 
 `POST /api/auth/login`
 Żądanie:
+
 ```json
 { "email": "user@example.com", "password": "S3cure!Pass" }
 ```
+
 Odpowiedź:
+
 ```json
 { "success": true, "data": { "user": { "id": "uuid", "email": "user@example.com" } } }
 ```
+
 Błędy:
+
 ```json
 { "success": false, "errorCode": "invalid_credentials", "message": "Nieprawidłowy e‑mail lub hasło." }
 ```
@@ -193,60 +221,79 @@ Odpowiedź (204 No Content) – bez treści.
 
 `POST /api/auth/reset/request`
 Żądanie:
+
 ```json
 { "email": "user@example.com" }
 ```
+
 Odpowiedź:
+
 ```json
 { "success": true }
 ```
 
 `POST /api/auth/reset/complete`
 Żądanie:
+
 ```json
 { "newPassword": "N3w!Pass", "confirmPassword": "N3w!Pass" }
 ```
+
 Odpowiedź:
+
 ```json
 { "success": true }
 ```
+
 Błędy:
+
 ```json
 { "success": false, "errorCode": "invalid_input", "message": "Hasło nie spełnia wymagań." }
 ```
 
 `GET /api/auth/session`
 Odpowiedź:
+
 ```json
 { "success": true, "data": { "user": { "id": "uuid", "email": "user@example.com" } } }
 ```
+
 lub
+
 ```json
 { "success": false, "errorCode": "invalid_credentials", "message": "Brak aktywnej sesji." }
 ```
 
 `POST /api/auth/account/delete`
 Opis:
+
 - Usuwa konto zalogowanego użytkownika oraz jego dane aplikacyjne.
--- Wymaga sesji i re‑autoryzacji hasłem; wywołuje Supabase Admin API po stronie serwera.
-Żądanie:
+  -- Wymaga sesji i re‑autoryzacji hasłem; wywołuje Supabase Admin API po stronie serwera.
+  Żądanie:
+
 ```json
 { "currentPassword": "S3cure!Pass" }
 ```
+
 Odpowiedź:
+
 - 204 No Content (sukces)
-Błędy:
+  Błędy:
+
 ```json
 { "success": false, "errorCode": "invalid_credentials", "message": "Brak aktywnej sesji." }
 ```
+
 ```json
 { "success": false, "errorCode": "invalid_credentials", "message": "Nieprawidłowe hasło." }
 ```
+
 ```json
 { "success": false, "errorCode": "unknown", "message": "Nie udało się usunąć konta." }
 ```
 
 ### 2.5 Middleware i renderowanie SSR
+
 - `src/middleware/index.ts`
   - Tworzy Supabase Server Client z ciasteczkami żądania/odpowiedzi.
   - Pozyskuje bieżącą sesję i umieszcza `user` w `locals`.
@@ -258,6 +305,7 @@ Błędy:
   - Konfiguracja zgodna z `astro.config.mjs` (output: "server", `@astrojs/node` adapter), bez kolizji z istniejącymi integracjami (React, Tailwind, sitemap).
 
 ### 2.6 Ograniczenia (rate limiting) i bezpieczeństwo
+
 - `src/lib/middleware/rateLimit.ts`
   - Prosty token bucket / sliding window per IP (np. 5–10 żądań/min) dla `/api/auth/*`.
   - Status 429 i komunikat „Zbyt wiele prób – spróbuj ponownie później”.
@@ -276,6 +324,7 @@ Błędy:
 ## 3. System autentykacji (Supabase + Astro)
 
 ### 3.1 Zmienne środowiskowe i konfiguracja
+
 - `.env`:
   - `PUBLIC_SUPABASE_URL`
   - `PUBLIC_SUPABASE_ANON_KEY`
@@ -288,6 +337,7 @@ Błędy:
   - Szablony e‑mail dla resetu i weryfikacji wskazują na `PUBLIC_SITE_URL/auth/reset/confirm`.
 
 ### 3.2 Klienci Supabase
+
 - `src/db/supabaseClient.ts` (przeglądarka)
   - `createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY)`.
   - Używany TYLKO do odczytów niekrytycznych po zalogowaniu (np. lekka personalizacja) – akcji auth nie wykonujemy po stronie klienta.
@@ -299,6 +349,7 @@ Błędy:
   - Używany wyłącznie do operacji administracyjnych wymagających uprawnień (np. usunięcie użytkownika).
 
 ### 3.3 Przepływy
+
 - Rejestracja:
   - Endpoint `signup` wywołuje `auth.signUp({ email, password, options: { emailRedirectTo: PUBLIC_SITE_URL + '/auth/reset/confirm' }})`.
   - Gdy verification ON: użytkownik musi kliknąć link → Supabase ustanawia sesję → ląduje na `/auth/reset/confirm`.
@@ -316,12 +367,14 @@ Błędy:
   - Dane aplikacyjne powiązane z użytkownikiem powinny być usuwane transakcyjnie/cascade w bazie (klucze obce ON DELETE CASCADE lub dedykowana funkcja/usługa czyszcząca – poza zakresem tego dokumentu).
 
 ### 3.4 Uprawnienia i RLS
+
 - Dostęp do danych użytkownika chroniony przez RLS w Supabase (poza zakresem tej specyfikacji).
 - Aplikacja kliencka wykorzystuje wyłącznie anon key; operacje krytyczne (auth) są wykonywane na serwerze poprzez SSR client i cookies.
 
 ---
 
 ## 4. Zgodność z projektem i wpływ na resztę aplikacji
+
 - Struktura katalogów zgodna z regułami:
   - `src/pages/auth/*` – nowe strony
   - `src/pages/settings/account.astro` – ustawienia konta (usuwanie konta)
@@ -338,6 +391,7 @@ Błędy:
 ---
 
 ## 5. Testowalność i scenariusze QA (wysoki poziom)
+
 - Rejestracja:
   - Nowy e‑mail → komunikat o weryfikacji.
   - Ponowna rejestracja tego samego e‑maila → 409 `email_in_use`.
@@ -364,6 +418,7 @@ Błędy:
 ---
 
 ## 6. Wymagane elementy implementacyjne (lista kontrolna)
+
 - Layouty: `AuthLayout.astro`, `AppLayout.astro`.
 - Strony: `auth/login.astro`, `auth/register.astro`, `auth/reset.astro`, `auth/reset/confirm.astro`, `settings/account.astro`.
 - Komponenty: `LoginForm.tsx`, `RegisterForm.tsx`, `ResetPasswordRequestForm.tsx`, `ResetPasswordForm.tsx`, `DeleteAccountSection.tsx`.
@@ -379,6 +434,7 @@ Błędy:
 ---
 
 ## 7. Zależności i wpływ na CI/CD
+
 - Dodatki (proponowane): `zod`, `react-hook-form`, `@hookform/resolvers`, `@supabase/ssr` (jeśli jeszcze nie ma).
 - Brak zmian w `astro.config.mjs` koniecznych na tym etapie; SSR i adapter node już skonfigurowane.
 - Pipeline CI/CD bez zmian – dochodzi tylko lint/typowanie nowych plików.
@@ -386,6 +442,5 @@ Błędy:
 ---
 
 ## 8. Pytania do Product/Stakeholders (do szybkiego potwierdzenia)
+
 - Po MVP: „eksport moich danych” (RODO) – ustalić zakres i format (CSV/JSON).
-
-

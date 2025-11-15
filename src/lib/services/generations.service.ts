@@ -166,7 +166,7 @@ export async function createGeneration(
     flashcardsProposals = await generateFlashcardProposals({ sourceText });
   } catch (error) {
     // Określenie kodu błędu na podstawie typu błędu
-    let errorCode = ERROR_CODES.AI_GENERATION_FAILED;
+    const errorCode = ERROR_CODES.AI_GENERATION_FAILED;
     let statusCode = 500;
 
     if (error instanceof FlashcardGenerationError) {
@@ -187,11 +187,7 @@ export async function createGeneration(
       error_message: errorMessage,
     });
 
-    throw new GenerationServiceError(
-      errorMessage,
-      statusCode,
-      errorCode
-    );
+    throw new GenerationServiceError(errorMessage, statusCode, errorCode);
   }
 
   const generationDuration = Date.now() - startedAt;

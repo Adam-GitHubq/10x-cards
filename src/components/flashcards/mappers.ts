@@ -37,5 +37,3 @@ function formatDateLabel(isoDate: string): string {
 
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
-
-

@@ -182,6 +182,3 @@ export function CreateFlashcardDialog({ open, onOpenChange, onCreated }: CreateF
     </Dialog>
   );
 }
-
-
-

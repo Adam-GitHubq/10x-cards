@@ -1,6 +1,6 @@
 /**
  * Przykłady użycia OpenRouterService
- * 
+ *
  * Ten plik zawiera przykłady integracji serwisu OpenRouter
  * w kontekście generowania fiszek dla aplikacji 10xCards.
  */
@@ -104,10 +104,10 @@ const FLASHCARDS_RESPONSE_FORMAT: ResponseFormat = {
  * Typ odpowiedzi z API dla fiszek
  */
 type FlashcardsApiResponse = {
-  flashcards: Array<{
+  flashcards: {
     front: string;
     back: string;
-  }>;
+  }[];
 };
 
 /**
@@ -125,13 +125,11 @@ export function createFlashcardsService(): OpenRouterService {
 
 /**
  * Generuje fiszki z dostarczonego tekstu
- * 
+ *
  * @param sourceText - Tekst źródłowy do przekształcenia w fiszki
  * @returns Tablica propozycji fiszek
  */
-export async function generateFlashcardsFromText(
-  sourceText: string
-): Promise<FlashcardProposalDto[]> {
+export async function generateFlashcardsFromText(sourceText: string): Promise<FlashcardProposalDto[]> {
   const service = createFlashcardsService();
 
   const prompt = `Na podstawie poniższego tekstu wygeneruj zestaw fiszek edukacyjnych.
@@ -176,7 +174,7 @@ export type GenerateFlashcardsOptions = {
 
 /**
  * Generuje fiszki z opcjami
- * 
+ *
  * @param sourceText - Tekst źródłowy
  * @param options - Opcje generowania
  * @returns Tablica propozycji fiszek
@@ -187,12 +185,7 @@ export async function generateFlashcardsWithOptions(
 ): Promise<FlashcardProposalDto[]> {
   const service = createFlashcardsService();
 
-  const {
-    count = 5,
-    difficulty = "medium",
-    language = "polski",
-    additionalInstructions = "",
-  } = options;
+  const { count = 5, difficulty = "medium", language = "polski", additionalInstructions = "" } = options;
 
   const difficultyInstructions = {
     easy: "Twórz proste, podstawowe pytania odpowiednie dla początkujących.",
@@ -225,13 +218,11 @@ ${sourceText}`;
 
 /**
  * Generuje fiszki z pełną obsługą błędów
- * 
+ *
  * @param sourceText - Tekst źródłowy
  * @returns Tablica propozycji fiszek lub null w przypadku błędu
  */
-export async function generateFlashcardsSafely(
-  sourceText: string
-): Promise<FlashcardProposalDto[] | null> {
+export async function generateFlashcardsSafely(sourceText: string): Promise<FlashcardProposalDto[] | null> {
   try {
     // Walidacja wejścia
     if (!sourceText || sourceText.trim().length === 0) {
@@ -265,17 +256,14 @@ export async function generateFlashcardsSafely(
 
 /**
  * Generuje fiszki z możliwością wyboru modelu
- * 
+ *
  * @param sourceText - Tekst źródłowy
  * @param model - Nazwa modelu OpenRouter
  * @returns Tablica propozycji fiszek
  */
-export async function generateFlashcardsWithModel(
-  sourceText: string,
-  model: string
-): Promise<FlashcardProposalDto[]> {
+export async function generateFlashcardsWithModel(sourceText: string, model: string): Promise<FlashcardProposalDto[]> {
   const service = createFlashcardsService();
-  
+
   // Dynamiczna zmiana modelu
   service.configureModel({ model });
 
@@ -296,13 +284,11 @@ export async function generateFlashcardsWithModel(
 
 /**
  * Generuje fiszki i zwraca informacje o użyciu tokenów
- * 
+ *
  * @param sourceText - Tekst źródłowy
  * @returns Fiszki i statystyki użycia
  */
-export async function generateFlashcardsWithUsage(
-  sourceText: string
-): Promise<{
+export async function generateFlashcardsWithUsage(sourceText: string): Promise<{
   flashcards: FlashcardProposalDto[];
   usage?: {
     promptTokens: number;
@@ -327,4 +313,3 @@ export async function generateFlashcardsWithUsage(
     usage: response.usage,
   };
 }
-

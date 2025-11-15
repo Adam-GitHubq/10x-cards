@@ -1,6 +1,6 @@
 /**
  * Generator fiszek przy użyciu OpenRouter API
- * 
+ *
  * Ten moduł odpowiada za generowanie propozycji fiszek edukacyjnych
  * z dostarczonego tekstu źródłowego przy użyciu modeli LLM.
  */
@@ -21,10 +21,10 @@ type GenerateFlashcardProposalsParams = {
  * Typ odpowiedzi z API OpenRouter
  */
 type FlashcardsApiResponse = {
-  flashcards: Array<{
+  flashcards: {
     front: string;
     back: string;
-  }>;
+  }[];
 };
 
 /**
@@ -62,11 +62,11 @@ const MIN_TEXT_LENGTH = 50;
 
 /**
  * Generuje propozycje fiszek z dostarczonego tekstu źródłowego
- * 
+ *
  * @param params - Parametry generowania
  * @returns Tablica propozycji fiszek
  * @throws {FlashcardGenerationError} W przypadku błędu walidacji lub generowania
- * 
+ *
  * @example
  * ```typescript
  * const proposals = await generateFlashcardProposals({
@@ -79,20 +79,14 @@ export async function generateFlashcardProposals({
 }: GenerateFlashcardProposalsParams): Promise<FlashcardProposalDto[]> {
   // Walidacja wejścia
   if (typeof sourceText !== "string" || sourceText.trim().length === 0) {
-    throw new FlashcardGenerationError(
-      ERROR_MESSAGES[ERROR_CODES.INVALID_INPUT],
-      ERROR_CODES.INVALID_INPUT
-    );
+    throw new FlashcardGenerationError(ERROR_MESSAGES[ERROR_CODES.INVALID_INPUT], ERROR_CODES.INVALID_INPUT);
   }
 
   const trimmedText = sourceText.trim();
 
   // Sprawdzenie minimalnej długości tekstu
   if (trimmedText.length < MIN_TEXT_LENGTH) {
-    throw new FlashcardGenerationError(
-      ERROR_MESSAGES[ERROR_CODES.TEXT_TOO_SHORT],
-      ERROR_CODES.TEXT_TOO_SHORT
-    );
+    throw new FlashcardGenerationError(ERROR_MESSAGES[ERROR_CODES.TEXT_TOO_SHORT], ERROR_CODES.TEXT_TOO_SHORT);
   }
 
   try {
@@ -124,11 +118,7 @@ export async function generateFlashcardProposals({
   } catch (error) {
     // Obsługa błędów OpenRouter
     if (error instanceof OpenRouterServiceError) {
-      throw new FlashcardGenerationError(
-        ERROR_MESSAGES[ERROR_CODES.API_ERROR],
-        ERROR_CODES.API_ERROR,
-        error
-      );
+      throw new FlashcardGenerationError(ERROR_MESSAGES[ERROR_CODES.API_ERROR], ERROR_CODES.API_ERROR, error);
     }
 
     // Przepuszczenie błędów walidacji
@@ -137,17 +127,13 @@ export async function generateFlashcardProposals({
     }
 
     // Obsługa nieznanych błędów
-    throw new FlashcardGenerationError(
-      ERROR_MESSAGES[ERROR_CODES.API_ERROR],
-      ERROR_CODES.API_ERROR,
-      error
-    );
+    throw new FlashcardGenerationError(ERROR_MESSAGES[ERROR_CODES.API_ERROR], ERROR_CODES.API_ERROR, error);
   }
 }
 
 /**
  * Buduje prompt dla modelu LLM
- * 
+ *
  * @param sourceText - Tekst źródłowy
  * @returns Sformatowany prompt
  */

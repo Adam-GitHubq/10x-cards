@@ -60,18 +60,18 @@
 
 ### Testy
 
-10. **src/lib/services/__tests__/openrouter.service.test.ts** (200+ linii)
+10. **src/lib/services/**tests**/openrouter.service.test.ts** (200+ linii)
     - Testy jednostkowe serwisu OpenRouter
     - Testy konstruktora
     - Testy metod publicznych
     - Testy walidacji
 
-11. **src/lib/services/ai/__tests__/flashcardsGenerator.unit.test.ts** (150+ linii)
+11. **src/lib/services/ai/**tests**/flashcardsGenerator.unit.test.ts** (150+ linii)
     - Testy jednostkowe generatora (mockowane)
     - Testy walidacji wejścia
     - Testy błędów
 
-12. **src/lib/services/ai/__tests__/flashcardsGenerator.integration.test.ts** (200+ linii)
+12. **src/lib/services/ai/**tests**/flashcardsGenerator.integration.test.ts** (200+ linii)
     - Testy integracyjne z prawdziwym API
     - Różne scenariusze tekstów
     - Testy wydajności
@@ -191,9 +191,9 @@ Przykłady:         ~300 linii  (8%)
 
 ### Dla testerów
 
-1. **src/lib/services/__tests__/openrouter.service.test.ts** - Testy serwisu
-2. **src/lib/services/ai/__tests__/flashcardsGenerator.unit.test.ts** - Testy jednostkowe
-3. **src/lib/services/ai/__tests__/flashcardsGenerator.integration.test.ts** - Testy integracyjne
+1. **src/lib/services/**tests**/openrouter.service.test.ts** - Testy serwisu
+2. **src/lib/services/ai/**tests**/flashcardsGenerator.unit.test.ts** - Testy jednostkowe
+3. **src/lib/services/ai/**tests**/flashcardsGenerator.integration.test.ts** - Testy integracyjne
 
 ## 🔍 Szybka nawigacja
 
@@ -278,4 +278,3 @@ Integracja OpenRouter została zakończona pomyślnie!
 - ✅ Gotowe do użycia w produkcji
 
 **Następny krok:** Przeczytaj [QUICKSTART.md](./QUICKSTART.md) i uruchom aplikację! 🚀
-

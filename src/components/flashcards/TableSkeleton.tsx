@@ -16,6 +16,3 @@ export function TableSkeleton({ rows = 10 }: TableSkeletonProps) {
     </div>
   );
 }
-
-
-

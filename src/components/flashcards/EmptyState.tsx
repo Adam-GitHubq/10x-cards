@@ -24,6 +24,3 @@ export function EmptyState({ onAdd }: EmptyStateProps) {
     </div>
   );
 }
-
-
-

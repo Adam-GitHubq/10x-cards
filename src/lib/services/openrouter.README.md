@@ -36,7 +36,7 @@ OPENROUTER_API_KEY=sk-or-v1-...
 ### Podstawowa inicjalizacja
 
 ```typescript
-import { OpenRouterService } from './lib/services/openrouter.service';
+import { OpenRouterService } from "./lib/services/openrouter.service";
 
 const service = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
@@ -48,10 +48,10 @@ const service = new OpenRouterService({
 ```typescript
 const service = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
-  baseUrl: 'https://openrouter.ai/api/v1', // opcjonalny
-  systemMessage: 'Jesteś ekspertem w tworzeniu fiszek edukacyjnych.',
+  baseUrl: "https://openrouter.ai/api/v1", // opcjonalny
+  systemMessage: "Jesteś ekspertem w tworzeniu fiszek edukacyjnych.",
   modelOptions: {
-    model: 'openai/gpt-4o-mini',
+    model: "openai/gpt-4o-mini",
     temperature: 0.7,
     maxTokens: 4096,
   },
@@ -63,7 +63,7 @@ const service = new OpenRouterService({
 ### Wysyłanie wiadomości
 
 ```typescript
-const response = await service.sendMessage('Wygeneruj fiszki z tego tekstu...');
+const response = await service.sendMessage("Wygeneruj fiszki z tego tekstu...");
 console.log(response.content);
 ```
 
@@ -71,26 +71,26 @@ console.log(response.content);
 
 ```typescript
 service.setResponseFormat({
-  type: 'json_schema',
+  type: "json_schema",
   json_schema: {
-    name: 'flashcardsResponse',
+    name: "flashcardsResponse",
     strict: true,
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
         flashcards: {
-          type: 'array',
+          type: "array",
           items: {
-            type: 'object',
+            type: "object",
             properties: {
-              front: { type: 'string' },
-              back: { type: 'string' },
+              front: { type: "string" },
+              back: { type: "string" },
             },
-            required: ['front', 'back'],
+            required: ["front", "back"],
           },
         },
       },
-      required: ['flashcards'],
+      required: ["flashcards"],
     },
   },
 });
@@ -106,12 +106,10 @@ type FlashcardsResponse = {
   }>;
 };
 
-const response = await service.sendMessage<FlashcardsResponse>(
-  'Wygeneruj 5 fiszek z tego tekstu...'
-);
+const response = await service.sendMessage<FlashcardsResponse>("Wygeneruj 5 fiszek z tego tekstu...");
 
 // response.content jest typowane jako FlashcardsResponse
-response.content.flashcards.forEach(card => {
+response.content.flashcards.forEach((card) => {
   console.log(`Q: ${card.front}`);
   console.log(`A: ${card.back}`);
 });
@@ -205,7 +203,7 @@ Zwraca aktualną konfigurację serwisu.
 ### Przykład 1: Generowanie fiszek z tekstu
 
 ```typescript
-import { OpenRouterService } from './lib/services/openrouter.service';
+import { OpenRouterService } from "./lib/services/openrouter.service";
 
 async function generateFlashcards(text: string) {
   const service = new OpenRouterService({
@@ -214,26 +212,26 @@ async function generateFlashcards(text: string) {
 
   // Konfiguracja formatu odpowiedzi
   service.setResponseFormat({
-    type: 'json_schema',
+    type: "json_schema",
     json_schema: {
-      name: 'flashcardsResponse',
+      name: "flashcardsResponse",
       strict: true,
       schema: {
-        type: 'object',
+        type: "object",
         properties: {
           flashcards: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                front: { type: 'string' },
-                back: { type: 'string' },
+                front: { type: "string" },
+                back: { type: "string" },
               },
-              required: ['front', 'back'],
+              required: ["front", "back"],
             },
           },
         },
-        required: ['flashcards'],
+        required: ["flashcards"],
       },
     },
   });
@@ -259,25 +257,25 @@ const service = new OpenRouterService({
 
 // Użyj Claude dla złożonych tekstów
 service.configureModel({
-  model: 'openai/gpt-4o-mini',
+  model: "openai/gpt-4o-mini",
   temperature: 0.7,
 });
 
-const complexResponse = await service.sendMessage('Złożony tekst...');
+const complexResponse = await service.sendMessage("Złożony tekst...");
 
 // Przełącz na GPT-4 dla prostszych zadań
 service.configureModel({
-  model: 'openai/gpt-4-turbo',
+  model: "openai/gpt-4-turbo",
   temperature: 0.5,
 });
 
-const simpleResponse = await service.sendMessage('Prosty tekst...');
+const simpleResponse = await service.sendMessage("Prosty tekst...");
 ```
 
 ### Przykład 3: Obsługa błędów
 
 ```typescript
-import { OpenRouterService, OpenRouterServiceError } from './lib/services/openrouter.service';
+import { OpenRouterService, OpenRouterServiceError } from "./lib/services/openrouter.service";
 
 async function safeGenerate(text: string) {
   const service = new OpenRouterService({
@@ -290,20 +288,20 @@ async function safeGenerate(text: string) {
   } catch (error) {
     if (error instanceof OpenRouterServiceError) {
       console.error(`Błąd OpenRouter [${error.code}]:`, error.message);
-      
+
       // Obsługa specyficznych błędów
       switch (error.code) {
-        case 'INVALID_API_KEY':
-          return { success: false, error: 'Nieprawidłowy klucz API' };
-        case 'RATE_LIMIT_ERROR':
-          return { success: false, error: 'Przekroczono limit zapytań' };
-        case 'TIMEOUT_ERROR':
-          return { success: false, error: 'Przekroczono czas oczekiwania' };
+        case "INVALID_API_KEY":
+          return { success: false, error: "Nieprawidłowy klucz API" };
+        case "RATE_LIMIT_ERROR":
+          return { success: false, error: "Przekroczono limit zapytań" };
+        case "TIMEOUT_ERROR":
+          return { success: false, error: "Przekroczono czas oczekiwania" };
         default:
-          return { success: false, error: 'Nieznany błąd' };
+          return { success: false, error: "Nieznany błąd" };
       }
     }
-    
+
     throw error;
   }
 }
@@ -316,7 +314,7 @@ const service = new OpenRouterService({
   apiKey: import.meta.env.OPENROUTER_API_KEY,
 });
 
-const response = await service.sendMessage('Wygeneruj fiszki...');
+const response = await service.sendMessage("Wygeneruj fiszki...");
 
 if (response.usage) {
   console.log(`Użyto tokenów:`);
@@ -380,7 +378,7 @@ const service = new OpenRouterService({
 ```typescript
 // NIE hardkoduj klucza w kodzie
 const service = new OpenRouterService({
-  apiKey: 'sk-or-v1-...',
+  apiKey: "sk-or-v1-...",
 });
 ```
 
@@ -416,25 +414,26 @@ npm run test src/lib/services/__tests__/openrouter.service.test.ts
 ### Mockowanie w testach
 
 ```typescript
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock fetch
 global.fetch = vi.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({
-      choices: [{ message: { content: 'test' } }],
-      model: 'test-model',
-    }),
+    json: () =>
+      Promise.resolve({
+        choices: [{ message: { content: "test" } }],
+        model: "test-model",
+      }),
   })
 );
 
 const service = new OpenRouterService({
-  apiKey: 'test-key',
+  apiKey: "test-key",
 });
 
-const response = await service.sendMessage('test');
-expect(response.content).toBe('test');
+const response = await service.sendMessage("test");
+expect(response.content).toBe("test");
 ```
 
 ### Testy integracyjne
@@ -443,7 +442,7 @@ Dla testów integracyjnych użyj prawdziwego klucza API w środowisku testowym:
 
 ```typescript
 // test.env
-OPENROUTER_API_KEY=sk-or-v1-test-key
+OPENROUTER_API_KEY = sk - or - v1 - test - key;
 ```
 
 ## Więcej przykładów
@@ -462,4 +461,3 @@ W przypadku problemów:
 2. Sprawdź logi błędów w konsoli
 3. Zweryfikuj klucz API i limity
 4. Sprawdź status API: https://status.openrouter.ai
-

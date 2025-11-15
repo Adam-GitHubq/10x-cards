@@ -17,6 +17,3 @@ export function HeaderActions({ onAdd, busy }: HeaderActionsProps) {
     </div>
   );
 }
-
-
-

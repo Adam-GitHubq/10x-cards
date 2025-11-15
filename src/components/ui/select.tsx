@@ -34,7 +34,11 @@ const SelectScrollUpButton = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
 >(function SelectScrollUpButton({ className, ...props }, ref) {
   return (
-    <SelectPrimitive.ScrollUpButton ref={ref} className={cn("flex items-center justify-center py-1", className)} {...props}>
+    <SelectPrimitive.ScrollUpButton
+      ref={ref}
+      className={cn("flex items-center justify-center py-1", className)}
+      {...props}
+    >
       <ChevronUp className="size-4" />
     </SelectPrimitive.ScrollUpButton>
   );
@@ -84,7 +88,13 @@ const SelectLabel = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Label>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
 >(function SelectLabel({ className, ...props }, ref) {
-  return <SelectPrimitive.Label ref={ref} className={cn("px-2 py-1.5 text-xs font-medium text-muted-foreground", className)} {...props} />;
+  return (
+    <SelectPrimitive.Label
+      ref={ref}
+      className={cn("px-2 py-1.5 text-xs font-medium text-muted-foreground", className)}
+      {...props}
+    />
+  );
 });
 
 const SelectItem = React.forwardRef<
@@ -114,20 +124,7 @@ const SelectSeparator = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Separator>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(function SelectSeparator({ className, ...props }, ref) {
-  return (
-    <SelectPrimitive.Separator ref={ref} className={cn("my-1 h-px bg-border", className)} {...props} />
-  );
+  return <SelectPrimitive.Separator ref={ref} className={cn("my-1 h-px bg-border", className)} {...props} />;
 });
 
-export {
-  Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
-  SelectContent,
-  SelectLabel,
-  SelectItem,
-  SelectSeparator,
-};
-
-
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator };

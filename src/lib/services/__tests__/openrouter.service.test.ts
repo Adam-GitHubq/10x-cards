@@ -1,6 +1,6 @@
 /**
  * Testy jednostkowe dla OpenRouterService
- * 
+ *
  * Uwaga: To jest przykładowy plik testowy do weryfikacji struktury.
  * Pełne testy wymagają konfiguracji środowiska testowego.
  */
@@ -195,12 +195,9 @@ describe("OpenRouterService", () => {
         apiKey: "test-api-key",
       });
 
-      await expect(service.sendMessage("")).rejects.toThrow(
-        OpenRouterServiceError
-      );
+      await expect(service.sendMessage("")).rejects.toThrow(OpenRouterServiceError);
     });
 
     // Uwaga: Testy integracyjne wymagają mockowania fetch lub prawdziwego API
   });
 });
-

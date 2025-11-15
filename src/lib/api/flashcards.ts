@@ -16,9 +16,7 @@ export type ApiError = {
 
 const DEFAULT_ERROR_MESSAGE = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.";
 
-export async function listFlashcards(
-  params: FlashcardListQueryParams = {}
-): Promise<ListFlashcardsResponseDto> {
+export async function listFlashcards(params: FlashcardListQueryParams = {}): Promise<ListFlashcardsResponseDto> {
   const queryString = buildQueryString(params);
 
   return callApi<ListFlashcardsResponseDto>(`/api/flashcards${queryString}`);
@@ -28,9 +26,7 @@ export async function getFlashcard(id: number): Promise<FlashcardDto> {
   return callApi<FlashcardDto>(`/api/flashcards/${id}`);
 }
 
-export async function createFlashcards(
-  payload: CreateFlashcardsCommand
-): Promise<CreateFlashcardsResponseDto> {
+export async function createFlashcards(payload: CreateFlashcardsCommand): Promise<CreateFlashcardsResponseDto> {
   return callApi<CreateFlashcardsResponseDto>("/api/flashcards", {
     method: "POST",
     headers: {
@@ -40,10 +36,7 @@ export async function createFlashcards(
   });
 }
 
-export async function updateFlashcard(
-  id: number,
-  payload: UpdateFlashcardCommand
-): Promise<FlashcardDto> {
+export async function updateFlashcard(id: number, payload: UpdateFlashcardCommand): Promise<FlashcardDto> {
   return callApi<FlashcardDto>(`/api/flashcards/${id}`, {
     method: "PUT",
     headers: {
@@ -53,8 +46,8 @@ export async function updateFlashcard(
   });
 }
 
-export async function deleteFlashcard(id: number): Promise<void> {
-  await callApi<void>(`/api/flashcards/${id}`, {
+export async function deleteFlashcard(id: number): Promise<undefined> {
+  return await callApi<undefined>(`/api/flashcards/${id}`, {
     method: "DELETE",
   });
 }
@@ -158,10 +151,7 @@ export function isApiError(error: unknown): error is ApiError {
 
   const candidate = error as Record<string, unknown>;
 
-  return (
-    typeof candidate.status === "number" &&
-    typeof candidate.message === "string"
-  );
+  return typeof candidate.status === "number" && typeof candidate.message === "string";
 }
 
 export function ensureApiError(error: unknown): ApiError {

@@ -1,6 +1,6 @@
 /**
  * Serwis OpenRouter - integracja z API OpenRouter dla generowania fiszek
- * 
+ *
  * Odpowiedzialności:
  * - Wysyłanie sformatowanych zapytań do API OpenRouter
  * - Walidacja i przetwarzanie odpowiedzi zgodnie z JSON Schema
@@ -84,13 +84,13 @@ type RequestPayload = {
 type OpenRouterResponse = {
   id: string;
   model: string;
-  choices: Array<{
+  choices: {
     message: {
       role: string;
       content: string;
     };
     finish_reason: string;
-  }>;
+  }[];
   usage?: {
     prompt_tokens: number;
     completion_tokens: number;
@@ -214,17 +214,14 @@ export class OpenRouterService {
 
   /**
    * Konstruktor serwisu OpenRouter
-   * 
+   *
    * @param config - Konfiguracja serwisu
    * @throws {OpenRouterServiceError} - Gdy brak wymaganej konfiguracji
    */
   constructor(config: OpenRouterServiceConfig) {
     // Walidacja wymaganej konfiguracji
     if (!config.apiKey || config.apiKey.trim().length === 0) {
-      throw new OpenRouterServiceError(
-        "Klucz API jest wymagany",
-        ERROR_CODES.INVALID_API_KEY
-      );
+      throw new OpenRouterServiceError("Klucz API jest wymagany", ERROR_CODES.INVALID_API_KEY);
     }
 
     // Inicjalizacja pól
@@ -232,7 +229,7 @@ export class OpenRouterService {
     this.baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
     this.systemMessage = config.systemMessage ?? DEFAULT_SYSTEM_MESSAGE;
     this.responseFormat = config.responseFormat;
-    
+
     // Inicjalizacja opcji modelu z domyślnymi wartościami
     this.modelOptions = {
       model: config.modelOptions?.model ?? DEFAULT_MODEL,
@@ -250,22 +247,16 @@ export class OpenRouterService {
 
   /**
    * Wysyła wiadomość do API OpenRouter
-   * 
+   *
    * @param message - Treść wiadomości użytkownika
    * @param options - Opcjonalne parametry żądania
    * @returns Przetworzona odpowiedź z API
    * @throws {OpenRouterServiceError} - W przypadku błędu komunikacji lub walidacji
    */
-  async sendMessage<T = unknown>(
-    message: string,
-    options?: RequestOptions
-  ): Promise<ResponseData<T>> {
+  async sendMessage<T = unknown>(message: string, options?: RequestOptions): Promise<ResponseData<T>> {
     // Walidacja wejścia
     if (!message || message.trim().length === 0) {
-      throw new OpenRouterServiceError(
-        "Wiadomość nie może być pusta",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Wiadomość nie może być pusta", ERROR_CODES.VALIDATION_ERROR);
     }
 
     // Budowanie payloadu
@@ -283,15 +274,12 @@ export class OpenRouterService {
 
   /**
    * Ustawia komunikat systemowy
-   * 
+   *
    * @param systemMessage - Nowy komunikat systemowy
    */
   setSystemMessage(systemMessage: string): void {
     if (!systemMessage || systemMessage.trim().length === 0) {
-      throw new OpenRouterServiceError(
-        "Komunikat systemowy nie może być pusty",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Komunikat systemowy nie może być pusty", ERROR_CODES.VALIDATION_ERROR);
     }
 
     this.systemMessage = systemMessage;
@@ -299,22 +287,16 @@ export class OpenRouterService {
 
   /**
    * Ustawia format odpowiedzi zgodny z JSON Schema
-   * 
+   *
    * @param responseFormat - Format odpowiedzi
    */
   setResponseFormat(responseFormat: ResponseFormat): void {
     if (!responseFormat || responseFormat.type !== "json_schema") {
-      throw new OpenRouterServiceError(
-        "Format odpowiedzi musi być typu json_schema",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Format odpowiedzi musi być typu json_schema", ERROR_CODES.VALIDATION_ERROR);
     }
 
     if (!responseFormat.json_schema?.name || !responseFormat.json_schema?.schema) {
-      throw new OpenRouterServiceError(
-        "Format odpowiedzi musi zawierać nazwę i schemat",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Format odpowiedzi musi zawierać nazwę i schemat", ERROR_CODES.VALIDATION_ERROR);
     }
 
     this.responseFormat = responseFormat;
@@ -322,26 +304,20 @@ export class OpenRouterService {
 
   /**
    * Konfiguruje opcje modelu
-   * 
+   *
    * @param options - Nowe opcje modelu
    */
   configureModel(options: Partial<ModelOptions>): void {
     if (options.model !== undefined) {
       if (!options.model || options.model.trim().length === 0) {
-        throw new OpenRouterServiceError(
-          "Nazwa modelu nie może być pusta",
-          ERROR_CODES.VALIDATION_ERROR
-        );
+        throw new OpenRouterServiceError("Nazwa modelu nie może być pusta", ERROR_CODES.VALIDATION_ERROR);
       }
       this.modelOptions.model = options.model;
     }
 
     if (options.temperature !== undefined) {
       if (options.temperature < 0 || options.temperature > 2) {
-        throw new OpenRouterServiceError(
-          "Temperatura musi być w zakresie 0-2",
-          ERROR_CODES.VALIDATION_ERROR
-        );
+        throw new OpenRouterServiceError("Temperatura musi być w zakresie 0-2", ERROR_CODES.VALIDATION_ERROR);
       }
       this.modelOptions.temperature = options.temperature;
     }
@@ -371,7 +347,7 @@ export class OpenRouterService {
 
   /**
    * Zwraca aktualną konfigurację serwisu
-   * 
+   *
    * @returns Kopia aktualnej konfiguracji
    */
   getConfiguration(): ServiceConfiguration {
@@ -390,7 +366,7 @@ export class OpenRouterService {
 
   /**
    * Buduje obiekt żądania do API
-   * 
+   *
    * @param message - Wiadomość użytkownika
    * @param options - Opcjonalne parametry
    * @returns Payload żądania
@@ -436,47 +412,35 @@ export class OpenRouterService {
 
   /**
    * Waliduje payload żądania
-   * 
+   *
    * @param payload - Payload do walidacji
    * @throws {OpenRouterServiceError} - Gdy payload jest nieprawidłowy
    */
   private _validateRequest(payload: RequestPayload): void {
     if (!payload.model || payload.model.trim().length === 0) {
-      throw new OpenRouterServiceError(
-        "Model jest wymagany",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Model jest wymagany", ERROR_CODES.VALIDATION_ERROR);
     }
 
     if (!payload.messages || payload.messages.length === 0) {
-      throw new OpenRouterServiceError(
-        "Wiadomości są wymagane",
-        ERROR_CODES.VALIDATION_ERROR
-      );
+      throw new OpenRouterServiceError("Wiadomości są wymagane", ERROR_CODES.VALIDATION_ERROR);
     }
 
     // Sprawdzenie czy wszystkie wiadomości mają wymagane pola
     for (const msg of payload.messages) {
       if (!msg.role || !msg.content) {
-        throw new OpenRouterServiceError(
-          "Każda wiadomość musi mieć rolę i treść",
-          ERROR_CODES.VALIDATION_ERROR
-        );
+        throw new OpenRouterServiceError("Każda wiadomość musi mieć rolę i treść", ERROR_CODES.VALIDATION_ERROR);
       }
     }
   }
 
   /**
    * Wysyła żądanie do API z mechanizmem retry
-   * 
+   *
    * @param payload - Payload żądania
    * @param timeout - Timeout żądania w ms
    * @returns Odpowiedź z API
    */
-  private async _sendRequestWithRetry(
-    payload: RequestPayload,
-    timeout?: number
-  ): Promise<OpenRouterResponse> {
+  private async _sendRequestWithRetry(payload: RequestPayload, timeout?: number): Promise<OpenRouterResponse> {
     let lastError: unknown;
     let retryDelay = INITIAL_RETRY_DELAY;
 
@@ -510,20 +474,14 @@ export class OpenRouterService {
 
   /**
    * Wysyła pojedyncze żądanie do API
-   * 
+   *
    * @param payload - Payload żądania
    * @param timeout - Timeout żądania w ms
    * @returns Odpowiedź z API
    */
-  private async _sendRequest(
-    payload: RequestPayload,
-    timeout?: number
-  ): Promise<OpenRouterResponse> {
+  private async _sendRequest(payload: RequestPayload, timeout?: number): Promise<OpenRouterResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      timeout ?? DEFAULT_TIMEOUT
-    );
+    const timeoutId = setTimeout(() => controller.abort(), timeout ?? DEFAULT_TIMEOUT);
 
     try {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -576,7 +534,7 @@ export class OpenRouterService {
 
   /**
    * Obsługuje błędy HTTP z API
-   * 
+   *
    * @param response - Odpowiedź HTTP
    * @throws {OpenRouterServiceError}
    */
@@ -628,7 +586,7 @@ export class OpenRouterService {
 
   /**
    * Przetwarza odpowiedź z API
-   * 
+   *
    * @param response - Surowa odpowiedź z API
    * @returns Przetworzona odpowiedź
    * @throws {OpenRouterServiceError} - Gdy odpowiedź jest nieprawidłowa
@@ -690,7 +648,7 @@ export class OpenRouterService {
 
   /**
    * Pomocnicza funkcja do opóźnienia
-   * 
+   *
    * @param ms - Czas opóźnienia w ms
    */
   private _delay(ms: number): Promise<void> {
@@ -699,7 +657,7 @@ export class OpenRouterService {
 
   /**
    * Loguje błąd (do rozszerzenia w przyszłości)
-   * 
+   *
    * @param error - Błąd do zalogowania
    * @param context - Dodatkowy kontekst
    */
@@ -708,4 +666,3 @@ export class OpenRouterService {
     console.error("[OpenRouterService]", error.message, context);
   }
 }
-

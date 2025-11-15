@@ -187,41 +187,35 @@ export function useFlashcardsSearchParams() {
     };
   }, []);
 
-  const replaceFilters = useCallback(
-    (next: FlashcardsFiltersVM, history: HistoryAction = "replace") => {
-      const normalized = normalizeFilters(next);
+  const replaceFilters = useCallback((next: FlashcardsFiltersVM, history: HistoryAction = "replace") => {
+    const normalized = normalizeFilters(next);
 
-      setFilters((prev) => {
-        if (areFiltersEqual(prev, normalized)) {
-          return prev;
-        }
+    setFilters((prev) => {
+      if (areFiltersEqual(prev, normalized)) {
+        return prev;
+      }
 
-        updateBrowserUrl(normalized, history);
-        return normalized;
+      updateBrowserUrl(normalized, history);
+      return normalized;
+    });
+  }, []);
+
+  const updateFilters = useCallback((partial: Partial<FlashcardsFiltersVM>, options: UpdateOptions = {}) => {
+    setFilters((prev) => {
+      const normalized = normalizeFilters({
+        ...prev,
+        ...(options.resetPage ? { page: DEFAULT_PAGE } : {}),
+        ...partial,
       });
-    },
-    []
-  );
 
-  const updateFilters = useCallback(
-    (partial: Partial<FlashcardsFiltersVM>, options: UpdateOptions = {}) => {
-      setFilters((prev) => {
-        const normalized = normalizeFilters({
-          ...prev,
-          ...(options.resetPage ? { page: DEFAULT_PAGE } : {}),
-          ...partial,
-        });
+      if (areFiltersEqual(prev, normalized)) {
+        return prev;
+      }
 
-        if (areFiltersEqual(prev, normalized)) {
-          return prev;
-        }
-
-        updateBrowserUrl(normalized, options.history ?? "replace");
-        return normalized;
-      });
-    },
-    []
-  );
+      updateBrowserUrl(normalized, options.history ?? "replace");
+      return normalized;
+    });
+  }, []);
 
   const resetFilters = useCallback(() => {
     replaceFilters(DEFAULT_FILTERS, "replace");
@@ -252,5 +246,3 @@ export function useFlashcardsSearchParams() {
 }
 
 export type UseFlashcardsSearchParamsResult = ReturnType<typeof useFlashcardsSearchParams>;
-
-

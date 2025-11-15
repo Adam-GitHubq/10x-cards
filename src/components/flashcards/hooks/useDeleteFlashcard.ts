@@ -1,10 +1,6 @@
 import { useCallback, useState } from "react";
 
-import {
-  deleteFlashcard,
-  ensureApiError,
-  type ApiError,
-} from "@/lib/api/flashcards";
+import { deleteFlashcard, ensureApiError, type ApiError } from "@/lib/api/flashcards";
 
 type UseDeleteFlashcardResult = {
   isDeleting: boolean;
@@ -43,5 +39,3 @@ export function useDeleteFlashcard(): UseDeleteFlashcardResult {
     resetError,
   };
 }
-
-

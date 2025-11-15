@@ -20,5 +20,3 @@ export const Label = React.forwardRef<React.ElementRef<typeof RadixLabel>, Label
     />
   );
 });
-
-

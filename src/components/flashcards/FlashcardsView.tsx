@@ -6,11 +6,7 @@ import type { FlashcardDto } from "@/types";
 import { Toaster } from "@/components/ui/sonner";
 
 import type { FlashcardRowVM, FlashcardsFiltersVM, FlashcardsListVM } from "./types";
-import {
-  useEditDialogState,
-  useFlashcardsQuery,
-  useFlashcardsSearchParams,
-} from "./hooks";
+import { useEditDialogState, useFlashcardsQuery, useFlashcardsSearchParams } from "./hooks";
 import { CreateFlashcardDialog } from "./CreateFlashcardDialog";
 import { DeleteFlashcardAlert } from "./DeleteFlashcardAlert";
 import { EditFlashcardDialog } from "./EditFlashcardDialog";
@@ -98,7 +94,6 @@ export function FlashcardsView() {
       return mutated ? next : prev;
     });
   }, [data]);
-
 
   const hasItems = listState.items.length > 0;
   const showEmptyState = !isLoading && !hasItems && !error;
@@ -285,11 +280,7 @@ export function FlashcardsView() {
         />
       </div>
 
-      <CreateFlashcardDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onCreated={handleCreated}
-      />
+      <CreateFlashcardDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} onCreated={handleCreated} />
 
       <EditFlashcardDialog
         id={editId}

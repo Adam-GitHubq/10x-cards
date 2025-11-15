@@ -63,6 +63,3 @@ export function DeleteFlashcardAlert({ id, open, onOpenChange, onDeleted }: Dele
     </AlertDialog>
   );
 }
-
-
-
