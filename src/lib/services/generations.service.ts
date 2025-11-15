@@ -9,11 +9,11 @@ import type {
 } from "../../types";
 import type { ListGenerationsQueryInput } from "../schemas/generations";
 import { computeMD5 } from "../utils/hash";
-import { generateFlashcardProposals } from "./ai/flashcardsGenerator";
+import { generateFlashcardProposals, FlashcardGenerationError } from "./ai/flashcardsGenerator";
 
 // TODO: Zastąpić stałą DEFAULT_SUPABASE_USER_ID odczytem realnego użytkownika z sesji Supabase.
 const DEFAULT_SUPABASE_USER_ID = import.meta.env.DEFAULT_SUPABASE_USER_ID;
-const DEFAULT_MODEL = "mock-openrouter-flashcards-v1";
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 if (!DEFAULT_SUPABASE_USER_ID) {
   throw new Error("Brak wartości DEFAULT_SUPABASE_USER_ID w zmiennych środowiskowych");
@@ -165,19 +165,32 @@ export async function createGeneration(
   try {
     flashcardsProposals = await generateFlashcardProposals({ sourceText });
   } catch (error) {
+    // Określenie kodu błędu na podstawie typu błędu
+    let errorCode = ERROR_CODES.AI_GENERATION_FAILED;
+    let statusCode = 500;
+
+    if (error instanceof FlashcardGenerationError) {
+      // Mapowanie błędów walidacji na odpowiednie kody HTTP
+      if (error.code === "INVALID_INPUT" || error.code === "TEXT_TOO_SHORT") {
+        statusCode = 400;
+      }
+    }
+
+    const errorMessage = extractErrorMessage(error);
+
     await logGenerationError(supabase, {
       user_id: userId,
       model,
       source_text_hash: sourceTextHash,
       source_text_length: sourceTextLength,
-      error_code: ERROR_CODES.AI_GENERATION_FAILED,
-      error_message: extractErrorMessage(error),
+      error_code: errorCode,
+      error_message: errorMessage,
     });
 
     throw new GenerationServiceError(
-      ERROR_MESSAGES[ERROR_CODES.AI_GENERATION_FAILED],
-      500,
-      ERROR_CODES.AI_GENERATION_FAILED
+      errorMessage,
+      statusCode,
+      errorCode
     );
   }
 

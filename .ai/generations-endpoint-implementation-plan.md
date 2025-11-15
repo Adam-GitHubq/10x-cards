@@ -70,7 +70,7 @@
    - `sourceTextLength = sourceText.length`.
    - Wyliczenie skrótu SHA-256 (binary/Buffer) po UTF-8: `hash = sha256(sourceText)`.
 4. Wywołanie LLM (OpenRouter):
-   - Konfiguracja: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (np. `openrouter/anthropic/claude-3.5-sonnet`) przez `import.meta.env`.
+   - Konfiguracja: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (np. `openrouter/openai/gpt-4o-mini`) przez `import.meta.env`.
    - Limit czasu (np. 60s); wyraźny prompt generujący pary Q/A.
    - Odpowiedź mapowana do `FlashcardProposalDto[]` (walidacja minimalna: niepuste `front/back`, przycięcie do limitów front=200, back=500).
 5. Zapis metadanych generacji:
@@ -171,7 +171,7 @@ Struktura logu (zgodna z DB):
      - `export async function POST(context) { ... }` — body → Zod → serwis → 201/4xx/5xx
    - Zasada: używać `context.locals.supabase` (nie importować klienta bezpośrednio).
 6. Konfiguracja środowiska
-   - Wymagane: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (domyślnie: `openrouter/anthropic/claude-3.5-sonnet`).
+   - Wymagane: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (domyślnie: `openrouter/openai/gpt-4o-mini`).
    - Walidacja obecności zmiennych w starcie serwisu/serwisu LLM; bezpieczne komunikaty.
 7. Testy
    - Jednostkowe: walidacja Zod, hash base64, mapowanie DTO.

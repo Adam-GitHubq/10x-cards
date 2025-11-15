@@ -55,7 +55,7 @@ Conventions:
 {
   "generation": {
     "id": 123,
-    "model": "openrouter/anthropic/claude-3.5-sonnet",
+    "model": "openrouter/openai/gpt-4o-mini",
     "sourceTextHash": "string",
     "sourceTextLength": 2450,
     "generatedCount": 20,
