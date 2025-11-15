@@ -5,11 +5,13 @@
 Widok umożliwia wklejenie długiego tekstu (1000–10000 znaków), uruchomienie generowania propozycji fiszek przez AI, następnie przegląd, edycję, akceptację/odrzucenie propozycji i zapis wybranych do bazy. W MVP nie ma zapisu draftu – użytkownik traci niewysłane zmiany przy odświeżeniu/nawigacji; pokażemy o tym jasną informację.
 
 Założenia i zgodność z PRD/US:
+
 - US‑003: formularz wejściowy, walidacja długości, wywołanie `POST /api/generations`, obsługa błędów.
 - US‑004: lista propozycji, inline-edytowalność, selekcja do zapisu, zapis przez `POST /api/flashcards`.
 - Maks. 30 propozycji widocznych na liście.
 
 Stack i wytyczne:
+
 - Astro 5 (strona `src/pages/generate.astro`) + React 19 (wyspa `GenerateView.tsx`).
 - TypeScript 5, Tailwind 4, shadcn/ui (Textarea, Button, Checkbox, Badge, Table, Skeleton, Toast).
 - Rules of Hooks; brak dedykowanych plików CSS; walidacje i logikę API prowadzimy w komponentach/hookach, wspólne narzędzia sieciowe w `src/lib`.
@@ -49,6 +51,7 @@ Drzewo komponentów (wysoki poziom):
 ## 4. Szczegóły komponentów
 
 ### GenerateView
+
 - Opis: Kontener UX i orkiestracja stanu, łączy formularz, wyniki generacji i zapis.
 - Główne elementy: wrapper `div`, sekcje formularza, podsumowania, listy propozycji, Toaster.
 - Interakcje: reaguje na `onGenerate`, `onEditProposal`, `onToggleApprove`, `onSaveApproved`, zarządza stanem i blokadami.
@@ -57,6 +60,7 @@ Drzewo komponentów (wysoki poziom):
 - Propsy: brak (top-level).
 
 ### GenerationForm
+
 - Opis: Wklejenie tekstu, licznik znaków, walidacja, CTA „Generuj”.
 - Główne elementy: shadcn `Textarea`, licznik (np. „2450/10000”), `Button` „Generuj”, krótka notka o braku persistencji.
 - Interakcje:
@@ -74,6 +78,7 @@ Drzewo komponentów (wysoki poziom):
   - `errors?: string[]`
 
 ### GenerationSummaryBar
+
 - Opis: Pokazuje metadane generacji po sukcesie.
 - Główne elementy: wiersz metryk (model, liczba, czas, data), `Badge` z modelem.
 - Interakcje: brak (tylko prezentacja).
@@ -82,6 +87,7 @@ Drzewo komponentów (wysoki poziom):
 - Propsy: `generation: GenerationBaseDto`.
 
 ### ProposalsSection
+
 - Opis: Sekcja listy propozycji wraz z akcjami.
 - Główne elementy: toolbar, tabela, skeletony.
 - Interakcje: `onSaveApproved`, `onApproveAll`, `onRejectAll`, `onClear`.
@@ -96,6 +102,7 @@ Drzewo komponentów (wysoki poziom):
   - `isSaving: boolean`
 
 ### ProposalsToolbar
+
 - Opis: Akcje nad listą.
 - Główne elementy: `Button` zapisu, przełączniki zbiorcze.
 - Interakcje: kliknięcia ww. akcji.
@@ -108,6 +115,7 @@ Drzewo komponentów (wysoki poziom):
   - `isSaving: boolean`
 
 ### ProposalTable
+
 - Opis: Prezentacja listy w tabeli, do 30 wierszy.
 - Główne elementy: shadcn `Table`, sticky header, kolumny: Approve, Front, Back, Source, Status.
 - Interakcje: deleguje do `ProposalRow`.
@@ -116,6 +124,7 @@ Drzewo komponentów (wysoki poziom):
 - Propsy: `proposals`, callbacki do edycji i akceptacji/odrzucenia.
 
 ### ProposalRow
+
 - Opis: Edytowalny wiersz z walidacją inline.
 - Główne elementy: `Checkbox` (zatwierdź), `Input`/`Textarea` dla front/back (limit znaków), `Badge` źródła, status.
 - Interakcje:
@@ -130,6 +139,7 @@ Drzewo komponentów (wysoki poziom):
 - Propsy: `proposal`, callbacki `onEdit`, `onToggleApprove`.
 
 ### SkeletonList
+
 - Opis: Placeholdery dla listy podczas `isLoading` generacji.
 - Główne elementy: 10–20 skeletonów w kształcie wierszy tabeli.
 - Interakcje/Walidacja: brak.
@@ -138,6 +148,7 @@ Drzewo komponentów (wysoki poziom):
 ## 5. Typy
 
 Używane DTO (z `src/types.ts`):
+
 - `CreateGenerationCommand` { sourceText: string }
 - `CreateGenerationResponseDto` { generation: GenerationBaseDto; flashcardsProposals: FlashcardProposalDto[] }
 - `GenerationBaseDto` { id, model, sourceTextHash, sourceTextLength, generatedCount, generationDuration, createdAt, updatedAt }
@@ -159,6 +170,7 @@ Używane DTO (z `src/types.ts`):
 ## 7. Integracja API
 
 Wywołania:
+
 - Generowanie: `POST /api/generations`
   - Request: `CreateGenerationCommand`
   - Response 201: `CreateGenerationResponseDto`
@@ -173,6 +185,7 @@ Wywołania:
   - Obsługa: 400 (np. puste `cards` lub walidacja), 404 (brak `generationId` u użytkownika), 500.
 
 Wspólna funkcja fetch:
+
 - `postJson<TReq, TRes>(url, body): Promise<TRes>` – nagłówki JSON, obsługa błędów.
 
 ## 8. Interakcje użytkownika
@@ -211,46 +224,54 @@ Wspólna funkcja fetch:
 
 ## 11. Kroki implementacji
 
-1) Routing i szkielety
+1. Routing i szkielety
+
 - Utwórz `src/pages/generate.astro` z montowaniem `GenerateView` oraz Toasterem shadcn (jeśli globalnie nieobecny).
 - Utwórz strukturę katalogów: `src/components/generate/`.
 
-2) UI formularza
+2. UI formularza
+
 - Zaimplementuj `GenerationForm` z shadcn `Textarea` + licznik + CTA „Generuj” + walidacja zakresu.
 - Dodaj notkę o braku persistencji.
 
-3) Logika generowania
+3. Logika generowania
+
 - Dodaj hook `useGeneration()` i wspólny `postJson` w `src/lib/http.ts` (lub podobnie), wywołujący `POST /api/generations`.
 - W `GenerateView` obsłuż stany: `idle` → `loading` → `ready`/`error`.
 - Zmapuj odpowiedź na `GenerationResultViewModel` (utwórz `ProposalViewModel[]`, max 30).
 
-4) Lista propozycji
+4. Lista propozycji
+
 - Zaimplementuj `ProposalsSection`, `ProposalsToolbar`, `ProposalTable`, `ProposalRow`, `SkeletonList`.
 - Dodaj `useReducer` do zarządzania listą, walidacją i licznikami.
 
-5) Edycja i walidacja inline
+5. Edycja i walidacja inline
+
 - W `ProposalRow` obsłuż zmianę pól, walidację i automatyczną zmianę `source` na `ai-edited` po edycji.
 - Zadbaj o dostępność (label/aria, focus ringi Tailwind).
 
-6) Zapis zatwierdzonych
+6. Zapis zatwierdzonych
+
 - Dodaj hook `useSaveApproved()` do wywołania `POST /api/flashcards`.
 - Buduj payload z zatwierdzonych i poprawnych wierszy, uwzględnij `generationId`.
 - Pokaż toast sukcesu i zresetuj selekcje lub całą listę (ustalone w UX – na start: odznacz zaznaczenia).
 
-7) Stany błędów i toasty
+7. Stany błędów i toasty
+
 - Skonfiguruj shadcn Toast/Toaster.
 - Przechwytuj 400/404/500 i pokazuj właściwe komunikaty; 400 mapuj do pól jeśli możliwe.
 
-8) Stylowanie i dopracowanie UX
+8. Stylowanie i dopracowanie UX
+
 - Tailwind 4 dla layoutu, odstępów, kolorystyki walidacji; badge dla źródła.
 - Sticky header tabeli, responsywność, focus management.
 
-9) Testy i weryfikacja
+9. Testy i weryfikacja
+
 - Scenariusze: zbyt krótki/długi tekst, brak sieci, 500 z backendu, edycje przekraczające limity, zapis z błędami, brak zaznaczonych.
 - Sprawdź, że `POST /flashcards` odrzuci niepoprawne payloady; UI je nie wysyła.
 
-10) Porządki
+10. Porządki
+
 - Ewentualne wydzielenie helpers (walidacja, mapowanie DTO→VM) do `src/lib`.
 - Przegląd lintera/typów, ostatni audit dostępności (tab order, aria-live dla błędów).
-
-

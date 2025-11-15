@@ -1,182 +1,182 @@
-import type { Database, Tables } from './db/database.types'
+import type { Tables } from "./db/database.types";
 
-type IsoDateString = string
+type IsoDateString = string;
 
-export type FlashcardSource = 'manual' | 'ai-full' | 'ai-edited'
+export type FlashcardSource = "manual" | "ai-full" | "ai-edited";
 
-type GenerationRow = Tables<'generations'>
-type FlashcardRow = Tables<'flashcards'>
-type GenerationErrorLogRow = Tables<'generation_error_logs'>
+type GenerationRow = Tables<"generations">;
+type FlashcardRow = Tables<"flashcards">;
+type GenerationErrorLogRow = Tables<"generation_error_logs">;
 
 /**
  * Standaryzowana struktura metadanych paginacji.
  */
 export type PaginationDto = {
-  page: number
-  pageSize: number
-  total: number
-}
+  page: number;
+  pageSize: number;
+  total: number;
+};
 
 /**
  * Wspólny kształt odpowiedzi listujących.
  */
 export type PaginatedResponse<Item> = {
-  items: Item[]
-  pagination: PaginationDto
-}
+  items: Item[];
+  pagination: PaginationDto;
+};
 
 /**
  * Polecenie uruchomienia procesu generowania kart.
  * Model i limity są ustalane po stronie serwera.
  */
 export type CreateGenerationCommand = {
-  sourceText: string
-}
+  sourceText: string;
+};
 
 /**
  * Metadane generacji zwracane w kontekście standardowych operacji.
  */
 export type GenerationBaseDto = {
-  id: GenerationRow['id']
-  model: GenerationRow['model']
-  sourceTextHash: GenerationRow['source_text_hash']
-  sourceTextLength: GenerationRow['source_text_length']
-  generatedCount: GenerationRow['generated_count']
-  generationDuration: GenerationRow['generation_duration']
-  createdAt: IsoDateString
-  updatedAt: IsoDateString
-}
+  id: GenerationRow["id"];
+  model: GenerationRow["model"];
+  sourceTextHash: GenerationRow["source_text_hash"];
+  sourceTextLength: GenerationRow["source_text_length"];
+  generatedCount: GenerationRow["generated_count"];
+  generationDuration: GenerationRow["generation_duration"];
+  createdAt: IsoDateString;
+  updatedAt: IsoDateString;
+};
 
 /**
  * Pojedyncza propozycja karty zwrócona przez LLM.
  */
 export type FlashcardProposalDto = {
-  front: string
-  back: string
-  source: "ai-full"
-}
+  front: string;
+  back: string;
+  source: "ai-full";
+};
 
 /**
  * Odpowiedź po utworzeniu generacji wraz z propozycjami kart.
  */
 export type CreateGenerationResponseDto = {
-  generation: GenerationBaseDto
-  flashcardsProposals: FlashcardProposalDto[]
-}
+  generation: GenerationBaseDto;
+  flashcardsProposals: FlashcardProposalDto[];
+};
 
 /**
  * Parametry filtrowania oraz sortowania listy generacji.
  */
 export type GenerationListQueryParams = {
-  page?: number
-  pageSize?: number
-  sort?: string
-  model?: GenerationRow['model']
-  createdFrom?: IsoDateString
-  createdTo?: IsoDateString
-}
+  page?: number;
+  pageSize?: number;
+  sort?: string;
+  model?: GenerationRow["model"];
+  createdFrom?: IsoDateString;
+  createdTo?: IsoDateString;
+};
 
 /**
  * Pojedynczy element polecenia tworzenia kart.
  */
 export type CreateFlashcardItemCommand = {
-  front: string
-  back: string
-  source: FlashcardSource
-  generationId?: FlashcardRow['generation_id']
-}
+  front: string;
+  back: string;
+  source: FlashcardSource;
+  generationId?: FlashcardRow["generation_id"];
+};
 
 /**
  * Polecenie utworzenia zestawu kart.
  */
 export type CreateFlashcardsCommand = {
-  cards: CreateFlashcardItemCommand[]
-}
+  cards: CreateFlashcardItemCommand[];
+};
 
 /**
  * Reprezentacja karty w odpowiedziach API.
  */
 export type FlashcardDto = {
-  id: FlashcardRow['id']
-  generationId: FlashcardRow['generation_id']
-  source: FlashcardSource
-  front: FlashcardRow['front']
-  back: FlashcardRow['back']
-  createdAt: IsoDateString
-  updatedAt: IsoDateString
-}
+  id: FlashcardRow["id"];
+  generationId: FlashcardRow["generation_id"];
+  source: FlashcardSource;
+  front: FlashcardRow["front"];
+  back: FlashcardRow["back"];
+  createdAt: IsoDateString;
+  updatedAt: IsoDateString;
+};
 
 /**
  * Odpowiedź po utworzeniu kart.
  */
 export type CreateFlashcardsResponseDto = {
-  flashcards: FlashcardDto[]
-}
+  flashcards: FlashcardDto[];
+};
 
 /**
  * Parametry filtrowania listy kart.
  */
 export type FlashcardListQueryParams = {
-  page?: number
-  pageSize?: number
-  sort?: 'createdAt'
-  order?: 'asc' | 'desc'
-  source?: FlashcardSource
-  generationId?: FlashcardRow['generation_id']
-}
+  page?: number;
+  pageSize?: number;
+  sort?: "createdAt";
+  order?: "asc" | "desc";
+  source?: FlashcardSource;
+  generationId?: FlashcardRow["generation_id"];
+};
 
 /**
  * Lista kart z paginacją.
  */
 export type ListFlashcardsResponseDto = {
-  items: FlashcardDto[]
-  pagination: PaginationDto
-}
+  items: FlashcardDto[];
+  pagination: PaginationDto;
+};
 
 /**
  * Szczegóły pojedynczej karty.
  */
-export type GetFlashcardResponseDto = FlashcardDto
+export type GetFlashcardResponseDto = FlashcardDto;
 
 /**
  * Polecenie aktualizacji treści karty.
  */
 export type UpdateFlashcardCommand = {
-  front: string
-  back: string
-}
+  front: string;
+  back: string;
+};
 
 /**
  * Log błędu generacji.
  */
 export type GenerationErrorLogDto = {
-  id: GenerationErrorLogRow['id']
-  userId: GenerationErrorLogRow['user_id']
-  model: GenerationErrorLogRow['model']
-  sourceTextHash: GenerationErrorLogRow['source_text_hash']
-  sourceTextLength: GenerationErrorLogRow['source_text_length']
-  errorCode: GenerationErrorLogRow['error_code']
-  errorMessage: GenerationErrorLogRow['error_message']
-  createdAt: IsoDateString
-}
+  id: GenerationErrorLogRow["id"];
+  userId: GenerationErrorLogRow["user_id"];
+  model: GenerationErrorLogRow["model"];
+  sourceTextHash: GenerationErrorLogRow["source_text_hash"];
+  sourceTextLength: GenerationErrorLogRow["source_text_length"];
+  errorCode: GenerationErrorLogRow["error_code"];
+  errorMessage: GenerationErrorLogRow["error_message"];
+  createdAt: IsoDateString;
+};
 
 /**
  * Lista logów błędów generacji z paginacją.
  */
-export type ListGenerationErrorLogsResponseDto = PaginatedResponse<GenerationErrorLogDto>
+export type ListGenerationErrorLogsResponseDto = PaginatedResponse<GenerationErrorLogDto>;
 
 /**
  * Odpowiedź endpointu health-check.
  */
 export type HealthResponseDto = {
-  status: string
-}
+  status: string;
+};
 
 /**
  * Odpowiedź z informacjami o wersji.
  */
 export type VersionResponseDto = {
-  version: string
-  commit: string
-  env: string
-}
+  version: string;
+  commit: string;
+  env: string;
+};

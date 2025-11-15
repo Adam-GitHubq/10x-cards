@@ -3,6 +3,7 @@
 This plan defines a pragmatic, secure REST API for the 10x-cards application, aligned with the provided database schema, PRD, and technology stack (Astro 5 + TypeScript 5 + React 19 + Tailwind 4 + Shadcn/ui; Supabase for DB/Auth; OpenRouter for LLM). All endpoints are designed to run under `src/pages/api` (Astro), with shared DTOs in `src/types.ts` and common middleware in `src/middleware/index.ts`.
 
 Conventions:
+
 - Media type: `application/json; charset=utf-8`
 - Field naming in API: camelCase; DB uses snake_case (mapped at the service layer)
 - Time fields: ISO-8601 strings in UTC (e.g., `2025-11-09T15:39:00Z`)
@@ -26,10 +27,11 @@ Conventions:
 ## 2. Endpoints
 
 ### 2.0 Shared patterns
+
 - Pagination (list endpoints)
   - Query: `page` default 1, `pageSize` (1..100; default 10), `sort` (default `createdAt`), `order` (`asc`, `desc`)
   - Response: `pagination` ( `page`, `total`, `pageSize`)
-- Sorting: support `createdAt` 
+- Sorting: support `createdAt`
 - Filtering: resource-specific (see each endpoint)
 
 ---
@@ -37,14 +39,18 @@ Conventions:
 ### 2.2 Generations
 
 #### POST /generations
+
 - Description: Initiate the AI generation process for flashcards proposals based on user-proviced text. Validate input text, call OpenRouter LLM to generate flashcard suggestions, persist a `generations` record, and return suggestions plus generation metadata.
 - Request JSON:
+
 ```json
 {
   "sourceText": "string of length 1000..10000"
 }
 ```
+
 - Response JSON (201):
+
 ```json
 {
   "generation": {
@@ -57,30 +63,33 @@ Conventions:
     "createdAt": "2025-11-09T15:41:23Z",
     "updatedAt": "2025-11-09T15:41:23Z"
   },
-  "flashcardsProposals": [
-    { "id": 1,  "front": "Generated Question", "back": "Generated Answer", "source": "ai-full" }
-  ]
+  "flashcardsProposals": [{ "id": 1, "front": "Generated Question", "back": "Generated Answer", "source": "ai-full" }]
 }
 ```
+
 - Errors:
   - 400 Bad Request — `sourceText` outside 1000..10000
   - 500 Internal Server Error — AI service errors (logs recorded in `generation_error_logs`)
 
 Validation/business:
+
 - `sourceText` lenghth is between 1000 and 10000 characters.
 - Call the AI service to generate flashcards proposals.
 - Store the generation metadata and associate generated flashcards proposals to the user.
 
 #### GET /generations
+
 - Description: List generation records for the current user.
 - Query: Supports pagination as needed
 - Response JSON: List of generation objects with metadata.
 
 #### GET /generations/:id
+
 - Description: Get a single generation by ID (must belong to user).
 - Success: 200 OK with item; 404 if not found
 
 #### DELETE /generations/:id
+
 - Description: Delete a generation record; associated flashcards remain (since FK is `ON DELETE SET NULL`). Intended for cleanup, optional in UI.
 - Response JSON: Generation details and associated flashcards.
 - Success: 204 No Content; 404 if not found
@@ -90,8 +99,10 @@ Validation/business:
 ### 2.3 Flashcards
 
 #### POST /flashcards
+
 - Description: Create one or many flashcards (manual or AI-generated).
 - Request JSON:
+
 ```json
 {
   "cards": [
@@ -105,12 +116,14 @@ Validation/business:
       "front": "string (1..200)",
       "back": "string (1..500)",
       "source": "manual",
-      "generationId": null 
+      "generationId": null
     }
   ]
 }
 ```
+
 - Response JSON (201):
+
 ```json
 {
   "flashcards": [
@@ -119,6 +132,7 @@ Validation/business:
   ]
 }
 ```
+
 - Validations:
   - `front` maximum length: 200 characters.
   - `back` maximum length: 500 characters.
@@ -129,13 +143,15 @@ Validation/business:
 - Errors:
   - 400 Bad Request — malformed body or empty `cards`
   - 404 Not Found — `generationId` not found or not owned by user
-  
+
 #### GET /flashcards
+
 - Description: List user’s flashcards with filtering and pagination.
 - Query:
   - `page` (default: 1), `pageSize` (default: 10) , `sort` (`createdAt` default), `order` (`asc` or `desc`)
   - Optional filters (`source`, `generation_id`)
 - Response JSON:
+
 ```json
 {
   "items": [
@@ -152,15 +168,18 @@ Validation/business:
   "pagination": { "page": 1, "pageSize": 10, "total": 100 }
 }
 ```
+
 - Success: 200 OK
 - Errors: 401 Unauthorized if token is invalid
 
 #### GET /flashcards/:id
+
 - Description: Get a single flashcard by ID.
 - Response JSON Flashcard object.
 - Errors: 404 Not Found, 401 Unauthorized
 
 #### PUT /flashcards/:id
+
 - Description: Update front/back.
 - Request JSON: Fields to update.
 - Response JSON (200): updated flashcard
@@ -175,13 +194,15 @@ Validation/business:
   - `source` must be one of `manual`, `ai-edited`.
 
 #### DELETE /flashcards/:id
+
 - Description: Delete a flashcard (owned by user).
 - Errors: 404 Not Found, 401 Unauthorized
+
 ---
 
 ### 2.4 Generation Error Logs
 
-*(Typicall used internally or by admin users)*
+_(Typicall used internally or by admin users)_
 
 #### GET /generation-error-logs
 
@@ -196,10 +217,12 @@ Note: no public POST route; logs are created internally by `/generations`.
 ### 2.6 Meta
 
 #### GET /health
+
 - Description: Liveness probe
 - Response: `{ "status":"ok" }`
 
 #### GET /version
+
 - Description: Build/version info
 - Response: `{ "version":"x.y.z", "commit":"abcdef", "env":"prod" }`
 
@@ -208,32 +231,38 @@ Note: no public POST route; logs are created internally by `/generations`.
 ## 3. Authentication and Authorization
 
 - Machanism: Token-based authentication using Supabase Auth.
-- Process: 
+- Process:
   - Users authenticate via `api/v1/auth/login` or `api/v1/auth/register`, receiving a bearer token.
   - Protected endpoints require the token in the `Authorization` header.
-  - Database-level Row-Level Security (RLS) ensures that users access only records with matching  `user_id`.
+  - Database-level Row-Level Security (RLS) ensures that users access only records with matching `user_id`.
 - Additional Considerations: Use https, rate limiting, and secure error messaging to mitigate security risks.
 
 ## 4. Validation and Business Logic
 
 ### 4.1 Generations
+
 Constraints (enforced at API and DB):
+
 - `sourceText` ∈ [1000, 10000] (reject otherwise)
 - `sourceTextHash`: Computed for duplicate detection
 
 Business rules:
+
 - Validate inputs and call the AI service upon POST `/generations`
 - Record generation metadata (model, generated_count, duration) and persist generated flashcards.
 - Error logging: on LLM errors, insert into `generation_error_logs` with `error_code`, `error_message`.
 - Automatic update of the `updated_at` field via database triggers when flashcards are doified.
 
 ### 4.2 Flashcards
+
 Constraints:
+
 - `front`: non-empty, length ≤ 200
 - `back`: non-empty, length ≤ 500
 - `source` ∈ {`manual`, `ai-full`, `ai-edited`}
 
 Business rules:
+
 - Automatic update of the `updated_at` field via database triggers when flashcards are doified.
 
 ---

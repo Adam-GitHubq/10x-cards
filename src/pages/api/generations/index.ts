@@ -1,31 +1,24 @@
-import type { APIContext } from 'astro'
-import { ZodError } from 'zod'
+import type { APIContext } from "astro";
+import { ZodError } from "zod";
 
-import {
-  ListGenerationsQuerySchema,
-  PostGenerationBodySchema,
-} from '../../../lib/schemas/generations'
-import {
-  createGeneration,
-  GenerationServiceError,
-  listGenerations,
-} from '../../../lib/services/generations.service'
+import { ListGenerationsQuerySchema, PostGenerationBodySchema } from "../../../lib/schemas/generations";
+import { createGeneration, GenerationServiceError, listGenerations } from "../../../lib/services/generations.service";
 
-export const prerender = false
+export const prerender = false;
 
 type ErrorResponseBody = {
-  message: string
-  code?: string
-  issues?: unknown
-}
+  message: string;
+  code?: string;
+  issues?: unknown;
+};
 
 function jsonResponse<T>(data: T, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-  })
+  });
 }
 
 function handleError(error: unknown): Response {
@@ -35,75 +28,72 @@ function handleError(error: unknown): Response {
         message: error.message,
         code: error.code,
       },
-      error.status,
-    )
+      error.status
+    );
   }
-
-  console.error('Nieoczekiwany błąd w /api/generations', error)
 
   return jsonResponse<ErrorResponseBody>(
     {
-      message: 'Wystąpił nieoczekiwany błąd serwera.',
+      message: "Wystąpił nieoczekiwany błąd serwera.",
     },
-    500,
-  )
+    500
+  );
 }
 
 export async function POST(context: APIContext): Promise<Response> {
-  let body: unknown
+  let body: unknown;
 
   try {
-    body = await context.request.json()
+    body = await context.request.json();
   } catch {
     return jsonResponse<ErrorResponseBody>(
       {
-        message: 'Nieprawidłowy format JSON w body żądania.',
+        message: "Nieprawidłowy format JSON w body żądania.",
       },
-      400,
-    )
+      400
+    );
   }
 
   try {
-    const payload = PostGenerationBodySchema.parse(body)
-    const result = await createGeneration(context, payload)
+    const payload = PostGenerationBodySchema.parse(body);
+    const result = await createGeneration(context, payload);
 
-    return jsonResponse(result, 201)
+    return jsonResponse(result, 201);
   } catch (error) {
     if (error instanceof ZodError) {
       return jsonResponse<ErrorResponseBody>(
         {
-          message: 'Body żądania nie przeszło walidacji.',
+          message: "Body żądania nie przeszło walidacji.",
           issues: error.flatten(),
         },
-        400,
-      )
+        400
+      );
     }
 
-    return handleError(error)
+    return handleError(error);
   }
 }
 
 export async function GET(context: APIContext): Promise<Response> {
-  const url = new URL(context.request.url)
-  const rawQuery = Object.fromEntries(url.searchParams.entries())
+  const url = new URL(context.request.url);
+  const rawQuery = Object.fromEntries(url.searchParams.entries());
 
   try {
-    const query = ListGenerationsQuerySchema.parse(rawQuery)
-    const result = await listGenerations(context, query)
+    const query = ListGenerationsQuerySchema.parse(rawQuery);
+    const result = await listGenerations(context, query);
 
-    return jsonResponse(result)
+    return jsonResponse(result);
   } catch (error) {
     if (error instanceof ZodError) {
       return jsonResponse<ErrorResponseBody>(
         {
-          message: 'Parametry zapytania nie przeszły walidacji.',
+          message: "Parametry zapytania nie przeszły walidacji.",
           issues: error.flatten(),
         },
-        400,
-      )
+        400
+      );
     }
 
-    return handleError(error)
+    return handleError(error);
   }
 }
-

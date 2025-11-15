@@ -20,6 +20,17 @@ const baseConfig = tseslint.config({
   rules: {
     "no-console": "warn",
     "no-unused-vars": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/consistent-indexed-object-style": "off",
+    "@typescript-eslint/no-dynamic-delete": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        semi: true,
+        singleQuote: false,
+        endOfLine: "auto",
+      },
+    ],
   },
 });
 
@@ -53,6 +64,8 @@ const reactConfig = tseslint.config({
     ...eslintPluginReactHooks.configs.recommended.rules,
     "react/react-in-jsx-scope": "off",
     "react-compiler/react-compiler": "error",
+    "react/display-name": "off",
+    "react/prop-types": "off",
   },
 });
 

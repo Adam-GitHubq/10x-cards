@@ -105,32 +105,32 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
   - Mapowanie: w serwisie mapowanie wierszy Supabase (snake_case) → DTO (camelCase).
 
 - POST `/api/flashcards`
-  1) Walidacja body Zod (w tym reguły krzyżowe), normalizacja `source` (default `manual`).
-  2) Ekstrakcja unikalnych `generationId` dla kart AI; weryfikacja istnienia i własności: `select id from generations where user_id=:uid and id in (...)`. Jeśli jakiekolwiek braki → 404.
-  3) Bulk insert do `flashcards` z `user_id`, warunkowym `generation_id`, `source`, `front`, `back`; `select('*')` aby zwrócić dane.
-  4) Mapowanie do `FlashcardDto[]`, zwrot 201.
+  1. Walidacja body Zod (w tym reguły krzyżowe), normalizacja `source` (default `manual`).
+  2. Ekstrakcja unikalnych `generationId` dla kart AI; weryfikacja istnienia i własności: `select id from generations where user_id=:uid and id in (...)`. Jeśli jakiekolwiek braki → 404.
+  3. Bulk insert do `flashcards` z `user_id`, warunkowym `generation_id`, `source`, `front`, `back`; `select('*')` aby zwrócić dane.
+  4. Mapowanie do `FlashcardDto[]`, zwrot 201.
 
 - GET `/api/flashcards`
-  1) Walidacja query Zod (paginacja/sort/order/filtry).
-  2) Zastosowanie filtrów: `user_id=:uid`, opcjonalnie `source`, `generation_id`.
-  3) Mapowanie pola sortowania: whitelist (np. `createdAt`→`created_at`). Kierunek z `order`.
-  4) Paginacja: `range(offset, end)` + `count:'exact'`.
-  5) Mapowanie do `ListFlashcardsResponseDto`.
+  1. Walidacja query Zod (paginacja/sort/order/filtry).
+  2. Zastosowanie filtrów: `user_id=:uid`, opcjonalnie `source`, `generation_id`.
+  3. Mapowanie pola sortowania: whitelist (np. `createdAt`→`created_at`). Kierunek z `order`.
+  4. Paginacja: `range(offset, end)` + `count:'exact'`.
+  5. Mapowanie do `ListFlashcardsResponseDto`.
 
 - GET `/api/flashcards/:id`
-  1) Walidacja `id`.
-  2) `select('*')` z `user_id=:uid` i `id=:id` + `maybeSingle()`.
-  3) 404 jeśli brak; inaczej mapowanie i 200.
+  1. Walidacja `id`.
+  2. `select('*')` z `user_id=:uid` i `id=:id` + `maybeSingle()`.
+  3. 404 jeśli brak; inaczej mapowanie i 200.
 
 - PUT `/api/flashcards/:id`
-  1) Walidacja `id` i body (`front`, `back`).
-  2) `update({ front, back })` z warunkami `user_id=:uid` i `id=:id` + `select('*')`.
-  3) 404 jeśli brak; inaczej 200 z DTO.
+  1. Walidacja `id` i body (`front`, `back`).
+  2. `update({ front, back })` z warunkami `user_id=:uid` i `id=:id` + `select('*')`.
+  3. 404 jeśli brak; inaczej 200 z DTO.
 
 - DELETE `/api/flashcards/:id`
-  1) Walidacja `id`.
-  2) `delete()` z warunkami `user_id=:uid` i `id=:id` + `select('id')`.
-  3) 404 jeśli brak; inaczej 200 `{ success: true }`.
+  1. Walidacja `id`.
+  2. `delete()` z warunkami `user_id=:uid` i `id=:id` + `select('id')`.
+  3. 404 jeśli brak; inaczej 200 `{ success: true }`.
 
 ### 6. Względy bezpieczeństwa
 
@@ -171,7 +171,7 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
 
 ### 9. Etapy wdrożenia
 
-1) Schematy Zod
+1. Schematy Zod
    - Utworzyć `src/lib/schemas/flashcards.ts`:
      - `PostFlashcardsBodySchema`:
        - `cards`: `z.array(z.object({ front, back, source?, generationId? })).min(1).max(100)`
@@ -184,7 +184,7 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
      - `FlashcardIdParamSchema`: `id: z.coerce.number().int().min(1)`
      - `PutFlashcardBodySchema`: `front`, `back` jak wyżej
 
-2) Serwis aplikacyjny
+2. Serwis aplikacyjny
    - Utworzyć `src/lib/services/flashcards.service.ts`:
      - Typ `SupabaseServerClient = App.Locals['supabase']`
      - `resolveUserId()` analogicznie do `generations.service.ts` (tymczasowo `DEFAULT_SUPABASE_USER_ID`)
@@ -198,7 +198,7 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
        - `deleteFlashcard(ctx, id: number): Promise<boolean>`
      - Klasa `FlashcardServiceError` i stałe `ERROR_CODES`/`ERROR_MESSAGES`
 
-3) Endpointy Astro
+3. Endpointy Astro
    - Utworzyć `src/pages/api/flashcards/index.ts`:
      - `export const prerender = false`
      - `POST`: parse JSON, walidacja `PostFlashcardsBodySchema`, wywołanie `createFlashcards`, zwrot 201
@@ -210,6 +210,5 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
      - `PUT`: walidacja paramów i body, `updateFlashcard` → 200/404
      - `DELETE`: walidacja paramów, `deleteFlashcard` → 200 `{ success:true }`/404
 
-4) Spójność typów
+4. Spójność typów
    - Upewnić się, że DTO zgodne z `src/types.ts` (brak zmiany `UpdateFlashcardCommand` — aktualizujemy tylko `front`, `back`).
-

@@ -42,7 +42,7 @@
 
 - Status 201 Created
 - Body: `CreateGenerationResponseDto`
-  - `generation`: 
+  - `generation`:
     - `id: number`
     - `model: string`
     - `sourceTextHash: string` — base64 z SHA-256 (DB: `BYTEA`)
@@ -59,33 +59,34 @@
 
 ### 5. Przepływ danych
 
-1) Autoryzacja użytkownika:
+1. Autoryzacja użytkownika:
    - Pobranie JWT z nagłówka `Authorization`.
    - `context.locals.supabase.auth.getUser(jwt)` → `user.id`; brak → 401.
-2) Walidacja żądania:
+2. Walidacja żądania:
    - Parsowanie JSON; walidacja Zod `sourceText` (po `trim()`).
    - Sprawdzenie zakresu długości (1000..10000); w razie błędu → 400.
-3) Przygotowanie danych do generacji:
+3. Przygotowanie danych do generacji:
    - Pomiar `startAt = monotonicNow()`.
    - `sourceTextLength = sourceText.length`.
    - Wyliczenie skrótu SHA-256 (binary/Buffer) po UTF-8: `hash = sha256(sourceText)`.
-4) Wywołanie LLM (OpenRouter):
+4. Wywołanie LLM (OpenRouter):
    - Konfiguracja: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (np. `openrouter/anthropic/claude-3.5-sonnet`) przez `import.meta.env`.
    - Limit czasu (np. 60s); wyraźny prompt generujący pary Q/A.
    - Odpowiedź mapowana do `FlashcardProposalDto[]` (walidacja minimalna: niepuste `front/back`, przycięcie do limitów front=200, back=500).
-5) Zapis metadanych generacji:
+5. Zapis metadanych generacji:
    - `generatedCount = proposals.length`.
    - `generationDuration = monotonicNow() - startAt`.
    - Insert do `public.generations` z polami:
      - `user_id, model, source_text_hash (BYTEA), source_text_length, generated_count, generation_duration`.
    - DB zwraca `id`, `created_at`, `updated_at`.
-6) Budowa odpowiedzi:
+6. Budowa odpowiedzi:
    - `sourceTextHash` w DTO jako base64 (zakodowanie `BYTEA`).
    - Zwrócenie 201 z `generation` oraz `flashcardsProposals`.
-7) Obsługa błędów:
+7. Obsługa błędów:
    - Wszelkie wyjątki LLM/DB → insert do `generation_error_logs` z `{ user_id, model, source_text_hash, source_text_length, errorCode, errorMessage }`, następnie odpowiedź 500 z ogólnym komunikatem.
 
 Uwagi i doprecyzowania:
+
 - Hash: zgodnie ze specyfikacją używamy SHA-256 (DB: `BYTEA`, API: base64). Nie używać MD5.
 - Propozycje są ephemeral — nie zapisujemy do `flashcards` na tym etapie.
 - Deduplikacja na podstawie `(user_id, source_text_hash)` może być dodana później (out-of-scope tego planu).
@@ -119,6 +120,7 @@ Uwagi i doprecyzowania:
     - `error_message`: skrót (do 500 znaków).
 
 Struktura logu (zgodna z DB):
+
 ```
 { user_id, model, source_text_hash (BYTEA), source_text_length, error_code, error_message }
 ```
@@ -136,20 +138,20 @@ Struktura logu (zgodna z DB):
 
 ### 9. Kroki implementacji
 
-1) Schematy walidacji (Zod)
+1. Schematy walidacji (Zod)
    - Plik: `src/lib/schemas/generations.ts`
    - Eksport:
      - `PostGenerationBodySchema = z.object({ sourceText: z.string().trim().min(1000).max(10000) })`
-2) Util kryptograficzny
+2. Util kryptograficzny
    - Plik: `src/lib/utils/hash.ts`
    - Funkcje:
      - `sha256ToBuffer(input: string): Promise<Uint8Array | Buffer>`
      - `bufferToBase64(input: Uint8Array | Buffer): string`
-3) Serwis LLM
+3. Serwis LLM
    - Plik: `src/lib/services/ai/flashcardsGenerator.ts`
    - `generateFlashcardProposals({ sourceText }: { sourceText: string }): Promise<FlashcardProposalDto[]>`
    - Implementacja: rzeczywiste wywołanie OpenRouter (z timeout); tymczasowo dopuszczalny mock gdy brak klucza.
-4) Serwis domenowy Generations
+4. Serwis domenowy Generations
    - Plik: `src/lib/services/generations.service.ts`
    - API:
      - `createGeneration(context, command: CreateGenerationCommand): Promise<CreateGenerationResponseDto>`
@@ -162,19 +164,19 @@ Struktura logu (zgodna z DB):
      - Insert do `generations` (BYTEA dla hash).
      - Mapowanie do `GenerationBaseDto` (hash → base64).
      - Obsługa wyjątków + insert do `generation_error_logs`.
-5) Endpoint Astro
+5. Endpoint Astro
    - Plik: `src/pages/api/generations/index.ts`
    - Zawartość:
      - `export const prerender = false`
      - `export async function POST(context) { ... }` — body → Zod → serwis → 201/4xx/5xx
    - Zasada: używać `context.locals.supabase` (nie importować klienta bezpośrednio).
-6) Konfiguracja środowiska
+6. Konfiguracja środowiska
    - Wymagane: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` (domyślnie: `openrouter/anthropic/claude-3.5-sonnet`).
    - Walidacja obecności zmiennych w starcie serwisu/serwisu LLM; bezpieczne komunikaty.
-7) Testy
+7. Testy
    - Jednostkowe: walidacja Zod, hash base64, mapowanie DTO.
    - Integracyjne: szczęśliwa ścieżka 201, 400 dla za krótkiego/za długiego inputu, 401 bez JWT, 500 gdy LLM timeout.
-8) Monitoring i logowanie
+8. Monitoring i logowanie
    - Minimalne logi aplikacyjne (poziom info/error, bez treści `sourceText`).
    - Zapis błędów do `generation_error_logs`.
 
@@ -182,44 +184,47 @@ Struktura logu (zgodna z DB):
 
 ```ts
 // src/pages/api/generations/index.ts
-export const prerender = false
+export const prerender = false;
 export async function POST(context: APIContext) {
-  const supabase = context.locals.supabase
-  const jwt = extractBearer(context.request.headers.get('authorization'))
-  const { data: userData, error: authError } = await supabase.auth.getUser(jwt)
-  if (authError || !userData?.user) return json(401, { message: 'Unauthorized' })
+  const supabase = context.locals.supabase;
+  const jwt = extractBearer(context.request.headers.get("authorization"));
+  const { data: userData, error: authError } = await supabase.auth.getUser(jwt);
+  if (authError || !userData?.user) return json(401, { message: "Unauthorized" });
 
-  const body = await context.request.json().catch(() => null)
-  const parse = PostGenerationBodySchema.safeParse(body)
-  if (!parse.success) return json(400, { message: 'Invalid body' })
+  const body = await context.request.json().catch(() => null);
+  const parse = PostGenerationBodySchema.safeParse(body);
+  if (!parse.success) return json(400, { message: "Invalid body" });
 
   try {
-    const result = await createGeneration(context, parse.data) // zwraca CreateGenerationResponseDto
-    return json(201, result)
+    const result = await createGeneration(context, parse.data); // zwraca CreateGenerationResponseDto
+    return json(201, result);
   } catch (e) {
-    return json(500, { message: 'Generation failed' })
+    return json(500, { message: "Generation failed" });
   }
 }
 ```
 
 ```ts
 // src/lib/services/generations.service.ts (rdzeń)
-export async function createGeneration(context: APIContext, { sourceText }: CreateGenerationCommand): Promise<CreateGenerationResponseDto> {
-  const supabase = context.locals.supabase
-  const userId = await requireUserIdFromContext(context) // getUser(jwt)
+export async function createGeneration(
+  context: APIContext,
+  { sourceText }: CreateGenerationCommand
+): Promise<CreateGenerationResponseDto> {
+  const supabase = context.locals.supabase;
+  const userId = await requireUserIdFromContext(context); // getUser(jwt)
 
-  const sourceTextTrimmed = sourceText.trim()
-  PostGenerationBodySchema.parse({ sourceText: sourceTextTrimmed })
+  const sourceTextTrimmed = sourceText.trim();
+  PostGenerationBodySchema.parse({ sourceText: sourceTextTrimmed });
 
-  const startedAt = performance.now()
-  const hashBuf = await sha256ToBuffer(sourceTextTrimmed)
-  const proposals = await generateFlashcardProposals({ sourceText: sourceTextTrimmed })
-  const generatedCount = proposals.length
-  const generationDuration = Math.round(performance.now() - startedAt)
+  const startedAt = performance.now();
+  const hashBuf = await sha256ToBuffer(sourceTextTrimmed);
+  const proposals = await generateFlashcardProposals({ sourceText: sourceTextTrimmed });
+  const generatedCount = proposals.length;
+  const generationDuration = Math.round(performance.now() - startedAt);
 
-  const model = envModel()
+  const model = envModel();
   const { data, error } = await supabase
-    .from('generations')
+    .from("generations")
     .insert({
       user_id: userId,
       model,
@@ -229,8 +234,8 @@ export async function createGeneration(context: APIContext, { sourceText }: Crea
       generation_duration: generationDuration,
     })
     .select()
-    .single()
-  if (error) throw dbError(error)
+    .single();
+  if (error) throw dbError(error);
 
   return {
     generation: {
@@ -244,21 +249,21 @@ export async function createGeneration(context: APIContext, { sourceText }: Crea
       updatedAt: new Date(data.updated_at).toISOString(),
     },
     flashcardsProposals: proposals,
-  }
+  };
 }
 ```
 
 ```ts
 // Logowanie błędów (fragment)
 async function logGenerationError(params: GenerationErrorLogParams) {
-  await supabase.from('generation_error_logs').insert({
+  await supabase.from("generation_error_logs").insert({
     user_id: params.userId,
     model: params.model,
     source_text_hash: params.sourceTextHash,
     source_text_length: params.sourceTextLength,
     error_code: params.errorCode,
     error_message: params.errorMessage.slice(0, 500),
-  })
+  });
 }
 ```
 
@@ -266,18 +271,26 @@ async function logGenerationError(params: GenerationErrorLogParams) {
 // Zod schema
 export const PostGenerationBodySchema = z.object({
   sourceText: z.string().trim().min(1000).max(10000),
-})
+});
 ```
 
 ```ts
 // Hash util
-export async function sha256ToBuffer(input: string): Promise<Uint8Array> { /* ... */ }
-export function bufferToBase64(buf: Uint8Array): string { /* ... */ }
+export async function sha256ToBuffer(input: string): Promise<Uint8Array> {
+  /* ... */
+}
+export function bufferToBase64(buf: Uint8Array): string {
+  /* ... */
+}
 ```
 
 ```ts
 // AI service (OpenRouter)
-export async function generateFlashcardProposals({ sourceText }: { sourceText: string }): Promise<FlashcardProposalDto[]> {
+export async function generateFlashcardProposals({
+  sourceText,
+}: {
+  sourceText: string;
+}): Promise<FlashcardProposalDto[]> {
   // timeout, walidacja odpowiedzi, mapowanie do { front, back, source: 'ai-full' }
 }
 ```
@@ -289,5 +302,3 @@ export async function generateFlashcardProposals({ sourceText }: { sourceText: s
 - Hash: SHA-256 (DB: BYTEA, API: base64) — zgodny z @api-plan.md.
 - Użycie Supabase z `context.locals.supabase` (middleware).
 - Logi błędów w `generation_error_logs` (pełna zgodność z planem DB).
-
-
