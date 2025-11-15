@@ -8,9 +8,13 @@ Założenia ogólne:
 - Routing i SSR zgodnie z `astro.config.mjs` (output: "server", adapter node). Ochrona tras po stronie serwera z użyciem middleware.
 - Spójne kontrakty API, jasna walidacja danych wejściowych i zunifikowana obsługa błędów.
 
+Decyzje dla MVP (zgodne z PRD):
+- Weryfikacja e‑mail: WYŁĄCZONA, aby spełnić US‑001 (po rejestracji użytkownik jest od razu zalogowany). Możliwość WŁĄCZENIA po MVP; wtedy `redirectTo` do `/auth/reset/confirm`.
+- `generatorRoute`: `/generate`.
+- Samoobsługowe usuwanie konta i danych: WŁĄCZONE (patrz rozdziały 2 i 3).
+- Eksport moich danych (RODO): PO MVP.
+
 Otwarte niuanse do potwierdzenia:
-- Czy po rejestracji wymagamy weryfikacji e‑mail (zalecane)? Jeśli tak – po `signUp` przekazujemy `redirectTo` do `/auth/reset/confirm` (Supabase może używać tej samej strony do potwierdzania sesji).
-- Docelowy adres „widoku generowania fiszek” do przekierowań po logowaniu: przyjmujemy alias `generatorRoute` (np. `/` lub `/generate`). Wymagane potwierdzenie.
 - W przyszłości możliwe dodanie social logins – poza zakresem tej specyfikacji.
 
 ---
@@ -37,6 +41,7 @@ Reguła: strony „auth” nie dzielą stanu z aplikacją zalogowaną; po uwierz
   - Strona przejściowa do obsługi linków Supabase (po rejestracji weryfikacja i przywracanie sesji po kliknięciu z e‑maila).
   - Renderuje `<ResetPasswordForm />` gdy link dotyczy ustawienia nowego hasła.
   - Obsługuje też scenariusz „powrót do aplikacji”, jeśli link jedynie ustanawia sesję (np. po weryfikacji e‑mail).
+- `src/pages/settings/account.astro` → renderuje `<DeleteAccountSection />` (React) w ramach `AppLayout.astro`.
 
 Uwagi:
 - Te strony używają `AuthLayout.astro`.
@@ -62,6 +67,10 @@ Uwagi:
   - Pola: `newPassword`, `confirmPassword`.
   - Akcja: POST do `/api/auth/reset/complete` (wymaga aktywnej sesji z linku Supabase).
   - Po sukcesie: redirect do `/auth/login?reset=success`.
+- `src/components/auth/DeleteAccountSection.tsx`
+  - Pole: `currentPassword`.
+  - Akcja: POST do `/api/auth/account/delete`.
+  - Wymagana re‑autoryzacja hasłem przed usunięciem konta.
 
 Wszystkie formularze:
 - UI: komponenty Shadcn/ui (`Form`, `Input`, `Button`, `Alert/Toast`), klasy Tailwind.
@@ -110,6 +119,7 @@ Katalog: `src/pages/api/auth/`
 - `reset/request.ts` (POST)
 - `reset/complete.ts` (POST)
 - `session.ts` (GET) – helper do pobrania bieżącego użytkownika
+- `account/delete.ts` (POST) – samoobsługowe usunięcie konta i danych
 
 Wspólne założenia:
 - Tworzymy Supabase Server Client per‑request (patrz 3.2), aby zarządzać sesją przez ciasteczka HTTP w tej samej domenie.
@@ -130,6 +140,7 @@ Walidacja:
   - `signupSchema`: { email, password, confirmPassword }
   - `resetRequestSchema`: { email }
   - `resetCompleteSchema`: { newPassword, confirmPassword }
+  - `deleteAccountSchema`: { currentPassword }
 
 ### 2.3 Mechanizm walidacji i obsługa wyjątków
 - Walidacja wejścia: Zod – na początku endpointu, z wczesnym zwrotem błędu (guard clause).
@@ -214,6 +225,27 @@ lub
 { "success": false, "errorCode": "invalid_credentials", "message": "Brak aktywnej sesji." }
 ```
 
+`POST /api/auth/account/delete`
+Opis:
+- Usuwa konto zalogowanego użytkownika oraz jego dane aplikacyjne.
+-- Wymaga sesji i re‑autoryzacji hasłem; wywołuje Supabase Admin API po stronie serwera.
+Żądanie:
+```json
+{ "currentPassword": "S3cure!Pass" }
+```
+Odpowiedź:
+- 204 No Content (sukces)
+Błędy:
+```json
+{ "success": false, "errorCode": "invalid_credentials", "message": "Brak aktywnej sesji." }
+```
+```json
+{ "success": false, "errorCode": "invalid_credentials", "message": "Nieprawidłowe hasło." }
+```
+```json
+{ "success": false, "errorCode": "unknown", "message": "Nie udało się usunąć konta." }
+```
+
 ### 2.5 Middleware i renderowanie SSR
 - `src/middleware/index.ts`
   - Tworzy Supabase Server Client z ciasteczkami żądania/odpowiedzi.
@@ -233,6 +265,9 @@ lub
   - Endpoints przyjmują wyłącznie `application/json`.
   - Operacje mutujące dostępne tylko jako `POST`.
   - Ciasteczka sesyjne ustawiane przez Supabase (HttpOnly) – ogranicza ryzyka XSS.
+- Usuwanie konta:
+  - Endpoint `/api/auth/account/delete` jest objęty rate‑limitem i wymaga aktywnej sesji.
+  - Wymagana „świeża” re‑autoryzacja: endpoint przyjmuje `currentPassword` i weryfikuje hasło po stronie serwera.
 - Nagłówki bezpieczeństwa:
   - Wspierane przez adapter node/SSR; rekomendujemy dodać standardowe `Content-Security-Policy`, `X-Frame-Options`, `Referrer-Policy` na poziomie serwera/pośrednika (poza zakresem implementacji w tym repo).
 
@@ -246,9 +281,10 @@ lub
   - `PUBLIC_SUPABASE_ANON_KEY`
   - (opcjonalnie) `PUBLIC_SITE_URL` – używane jako `redirectTo` w mailach (np. `https://app.example.com/auth/reset/confirm`).
   - Nigdy nie ujawniamy service role key w kliencie.
+  - `SUPABASE_SERVICE_ROLE_KEY` – używany wyłącznie po stronie serwera (endpoint usuwania konta).
 - Supabase Auth:
   - E‑mail/hasło włączone.
-  - (Zalecane) Weryfikacja e‑mail po rejestracji – redukcja nadużyć.
+  - (Po MVP, opcjonalne) Weryfikacja e‑mail po rejestracji – redukcja nadużyć.
   - Szablony e‑mail dla resetu i weryfikacji wskazują na `PUBLIC_SITE_URL/auth/reset/confirm`.
 
 ### 3.2 Klienci Supabase
@@ -258,6 +294,9 @@ lub
 - `src/db/supabaseServer.ts` (SSR/endpointy)
   - `createServerClient` z pakietu `@supabase/ssr` z integracją ciasteczek Astro (`cookies` z kontekstu żądania/odpowiedzi).
   - Wywoływany w middleware i endpointach `/api/auth/*` – to tu powstaje/aktualizuje się sesja HTTP.
+- `src/db/supabaseAdmin.ts` (tylko serwer)
+  - Klient admina z service role: `createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false }})`.
+  - Używany wyłącznie do operacji administracyjnych wymagających uprawnień (np. usunięcie użytkownika).
 
 ### 3.3 Przepływy
 - Rejestracja:
@@ -272,6 +311,9 @@ lub
   - `reset/request`: `auth.resetPasswordForEmail(email, { redirectTo: PUBLIC_SITE_URL + '/auth/reset/confirm' })`.
   - Po kliknięciu w mailu: Supabase przekierowuje do `/auth/reset/confirm` i ustanawia sesję dla użytkownika (krótkotrwałą).
   - `reset/complete`: `auth.updateUser({ password: newPassword })`, następnie (opcjonalnie) sign‑out i redirect do logowania.
+- Usunięcie konta:
+  - Endpoint `account/delete` pobiera `user.id` i `email` z sesji (SSR client), weryfikuje `currentPassword` poprzez `auth.signInWithPassword({ email, password: currentPassword })` (re‑auth), a następnie wywołuje Supabase Admin API do usunięcia użytkownika.
+  - Dane aplikacyjne powiązane z użytkownikiem powinny być usuwane transakcyjnie/cascade w bazie (klucze obce ON DELETE CASCADE lub dedykowana funkcja/usługa czyszcząca – poza zakresem tego dokumentu).
 
 ### 3.4 Uprawnienia i RLS
 - Dostęp do danych użytkownika chroniony przez RLS w Supabase (poza zakresem tej specyfikacji).
@@ -282,11 +324,12 @@ lub
 ## 4. Zgodność z projektem i wpływ na resztę aplikacji
 - Struktura katalogów zgodna z regułami:
   - `src/pages/auth/*` – nowe strony
+  - `src/pages/settings/account.astro` – ustawienia konta (usuwanie konta)
   - `src/pages/api/auth/*` – endpointy
   - `src/layouts/*` – layouty
-  - `src/components/auth/*` – formularze
+  - `src/components/auth/*` – formularze/sekcje (logowanie/rejestracja/reset/usuwanie konta)
   - `src/lib/validation/*` – schematy Zod
-  - `src/db/*` – klienci Supabase
+  - `src/db/*` – klienci Supabase (w tym `supabaseAdmin.ts` tylko dla serwera)
   - `src/middleware/index.ts` – ochrona tras i rate limit
 - Nie modyfikujemy istniejących usług AI, generowania fiszek ani konfiguracji Vite poza konieczną integracją cookies/middleware.
 - Zastosowanie Tailwind 4 i Shadcn/ui – bez dedykowanych plików CSS.
@@ -312,20 +355,26 @@ lub
   - Dostęp zalogowanego do `/auth/*` → redirect do `generatorRoute`.
 - Rate limiting:
   - Nadmierne próby logowania → 429.
+- Usuwanie konta:
+  - Próba bez sesji → 401 `invalid_credentials`.
+  - Złe hasło (re‑auth) → 401 `invalid_credentials`.
+  - Poprawne wywołanie → 204 No Content (konto i dane usunięte).
+  - Błąd admin API → 500 `unknown`.
 
 ---
 
 ## 6. Wymagane elementy implementacyjne (lista kontrolna)
 - Layouty: `AuthLayout.astro`, `AppLayout.astro`.
-- Strony: `auth/login.astro`, `auth/register.astro`, `auth/reset.astro`, `auth/reset/confirm.astro`.
-- Komponenty: `LoginForm.tsx`, `RegisterForm.tsx`, `ResetPasswordRequestForm.tsx`, `ResetPasswordForm.tsx`.
+- Strony: `auth/login.astro`, `auth/register.astro`, `auth/reset.astro`, `auth/reset/confirm.astro`, `settings/account.astro`.
+- Komponenty: `LoginForm.tsx`, `RegisterForm.tsx`, `ResetPasswordRequestForm.tsx`, `ResetPasswordForm.tsx`, `DeleteAccountSection.tsx`.
 - Walidacja: `src/lib/validation/authSchemas.ts` (Zod).
-- API: `src/pages/api/auth/{login,signup,logout,reset/request,reset/complete,session}.ts`.
+- API: `src/pages/api/auth/{login,signup,logout,reset/request,reset/complete,session,account/delete}.ts`.
 - Supabase:
   - `src/db/supabaseClient.ts` (przeglądarka),
-  - `src/db/supabaseServer.ts` (SSR, `@supabase/ssr`).
+  - `src/db/supabaseServer.ts` (SSR, `@supabase/ssr`),
+  - `src/db/supabaseAdmin.ts` (server‑only, service role).
 - Middleware: `src/middleware/index.ts` (sesja w `locals`, ochrona tras, rate limit).
-- Konfiguracja: `.env` z `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_SITE_URL`.
+- Konfiguracja: `.env` z `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_SITE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (tylko serwer).
 
 ---
 
@@ -337,8 +386,6 @@ lub
 ---
 
 ## 8. Pytania do Product/Stakeholders (do szybkiego potwierdzenia)
-- Czy bezwzględnie wymagamy weryfikacji e‑mail po rejestracji?
-- Jaki jest docelowy `generatorRoute` (np. `/`, `/generate`), aby ustawić stałe przekierowania?
-- Czy reset hasła powinien automatycznie wylogowywać po ustawieniu nowego hasła, czy pozostawiamy użytkownika zalogowanego do momentu ponownego logowania?
+- Po MVP: „eksport moich danych” (RODO) – ustalić zakres i format (CSV/JSON).
 
 
