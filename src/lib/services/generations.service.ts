@@ -11,13 +11,8 @@ import type { ListGenerationsQueryInput } from "../schemas/generations";
 import { computeMD5 } from "../utils/hash";
 import { generateFlashcardProposals, FlashcardGenerationError } from "./ai/flashcardsGenerator";
 
-// TODO: Zastąpić stałą DEFAULT_SUPABASE_USER_ID odczytem realnego użytkownika z sesji Supabase.
-const DEFAULT_SUPABASE_USER_ID = import.meta.env.DEFAULT_SUPABASE_USER_ID;
+// User ID is now resolved from locals.user (authenticated user from Supabase Auth)
 const DEFAULT_MODEL = "openai/gpt-4o-mini";
-
-if (!DEFAULT_SUPABASE_USER_ID) {
-  throw new Error("Brak wartości DEFAULT_SUPABASE_USER_ID w zmiennych środowiskowych");
-}
 
 type SupabaseServerClient = App.Locals["supabase"];
 
@@ -99,8 +94,10 @@ function getSupabaseClient(ctx: Pick<APIContext, "locals">): SupabaseServerClien
   return supabase;
 }
 
-function resolveUserId(): string {
-  if (!DEFAULT_SUPABASE_USER_ID) {
+function resolveUserId(ctx: Pick<APIContext, "locals">): string {
+  const user = ctx.locals?.user;
+
+  if (!user || !user.id) {
     throw new GenerationServiceError(
       ERROR_MESSAGES[ERROR_CODES.USER_NOT_AUTHENTICATED],
       401,
@@ -108,7 +105,7 @@ function resolveUserId(): string {
     );
   }
 
-  return DEFAULT_SUPABASE_USER_ID;
+  return user.id;
 }
 
 function mapGenerationRowToDto(row: GenerationRow): GenerationBaseDto {
@@ -152,7 +149,7 @@ export async function createGeneration(
   command: CreateGenerationCommand
 ): Promise<CreateGenerationResponseDto> {
   const supabase = getSupabaseClient(ctx);
-  const userId = resolveUserId();
+  const userId = resolveUserId(ctx);
 
   const model = DEFAULT_MODEL;
   const sourceText = command.sourceText;
@@ -235,7 +232,7 @@ export async function listGenerations(
   query: ListGenerationsQueryInput
 ): Promise<PaginatedResponse<GenerationBaseDto>> {
   const supabase = getSupabaseClient(ctx);
-  const userId = resolveUserId();
+  const userId = resolveUserId(ctx);
 
   const page = query.page;
   const pageSize = query.pageSize;
@@ -289,7 +286,7 @@ export async function getGenerationById(
   id: number
 ): Promise<GenerationBaseDto | null> {
   const supabase = getSupabaseClient(ctx);
-  const userId = resolveUserId();
+  const userId = resolveUserId(ctx);
 
   const { data, error } = await supabase
     .from("generations")
@@ -315,7 +312,7 @@ export async function getGenerationById(
 
 export async function deleteGeneration(ctx: Pick<APIContext, "locals">, id: number): Promise<boolean> {
   const supabase = getSupabaseClient(ctx);
-  const userId = resolveUserId();
+  const userId = resolveUserId(ctx);
 
   const { data, error } = await supabase.from("generations").delete().eq("user_id", userId).eq("id", id).select("id");
 
