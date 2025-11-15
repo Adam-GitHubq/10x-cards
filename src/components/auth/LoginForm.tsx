@@ -46,21 +46,51 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     async (values: LoginFormValues) => {
       setStatus({ type: "idle" });
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      console.info("[Auth] Login payload (mock)", values);
-
-      startTransition(() => {
-        setStatus({
-          type: "success",
-          message: "Formularz logowania został wysłany – integracja z API zostanie dodana później.",
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
         });
-        if (onSuccess) {
-          onSuccess();
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          // Błąd logowania
+          setStatus({
+            type: "error",
+            message: data.message || "Nie udało się zalogować. Spróbuj ponownie.",
+          });
+          return;
         }
-      });
+
+        // Sukces - przekieruj użytkownika
+        startTransition(() => {
+          setStatus({
+            type: "success",
+            message: "Logowanie zakończone sukcesem. Przekierowywanie...",
+          });
+
+          // Pobierz parametr 'next' z URL jeśli istnieje
+          const urlParams = new URLSearchParams(window.location.search);
+          const nextUrl = urlParams.get("next") || "/generate";
+
+          // Przekieruj po krótkiej chwili (aby użytkownik zobaczył komunikat sukcesu)
+          setTimeout(() => {
+            window.location.href = nextUrl;
+          }, 500);
+        });
+      } catch (error) {
+        console.error("[Auth] Login error:", error);
+        setStatus({
+          type: "error",
+          message: "Wystąpił błąd połączenia. Sprawdź połączenie internetowe i spróbuj ponownie.",
+        });
+      }
     },
-    [onSuccess, startTransition]
+    [startTransition]
   );
 
   return (

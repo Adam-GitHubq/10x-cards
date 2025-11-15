@@ -12,7 +12,11 @@ type RegisterFormProps = {
   onSuccess?: () => void;
 };
 
-type FormStatus = { type: "idle" } | { type: "success"; message: string } | { type: "error"; message: string };
+type FormStatus =
+  | { type: "idle" }
+  | { type: "success"; message: string }
+  | { type: "error"; message: string }
+  | { type: "email_verification"; message: string };
 
 const defaultValues: SignupFormValues = {
   email: "",
@@ -32,7 +36,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   const isSubmitting = form.formState.isSubmitting || isPending;
 
   const statusClasses = useMemo(() => {
-    if (status.type === "success") {
+    if (status.type === "success" || status.type === "email_verification") {
       return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300";
     }
 
@@ -47,21 +51,57 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     async (values: SignupFormValues) => {
       setStatus({ type: "idle" });
 
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      console.info("[Auth] Signup payload (mock)", values);
-
-      startTransition(() => {
-        setStatus({
-          type: "success",
-          message: "Formularz rejestracji został wstępnie wysłany – po podpięciu backendu nastąpi utworzenie konta.",
+      try {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
         });
-        if (onSuccess) {
-          onSuccess();
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          // Błąd rejestracji
+          setStatus({
+            type: "error",
+            message: data.message || "Nie udało się utworzyć konta. Spróbuj ponownie.",
+          });
+          return;
         }
-      });
+
+        // Sprawdź czy wymagana jest weryfikacja email
+        if (data.data.requiresEmailVerification) {
+          setStatus({
+            type: "email_verification",
+            message:
+              "Sprawdź swoją skrzynkę e-mail! Wysłaliśmy wiadomość z linkiem aktywacyjnym. Kliknij w link, aby dokończyć rejestrację.",
+          });
+          return;
+        }
+
+        // Sukces - użytkownik jest automatycznie zalogowany (weryfikacja email wyłączona)
+        startTransition(() => {
+          setStatus({
+            type: "success",
+            message: "Konto zostało utworzone! Przekierowywanie...",
+          });
+
+          // Przekieruj do generatora fiszek
+          setTimeout(() => {
+            window.location.href = "/generate";
+          }, 500);
+        });
+      } catch (error) {
+        console.error("[Auth] Signup error:", error);
+        setStatus({
+          type: "error",
+          message: "Wystąpił błąd połączenia. Sprawdź połączenie internetowe i spróbuj ponownie.",
+        });
+      }
     },
-    [onSuccess, startTransition]
+    [startTransition]
   );
 
   return (
@@ -117,7 +157,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
             />
           </div>
           <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Rejestrowanie…" : "Załóż konto"}
+            {isSubmitting ? "Tworzenie konta…" : "Załóż konto"}
           </Button>
         </form>
       </Form>
@@ -127,6 +167,16 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           className={cn("rounded-xl border px-4 py-3 text-sm leading-relaxed transition", statusClasses)}
         >
           {status.message}
+          {status.type === "email_verification" && (
+            <div className="mt-3">
+              <a
+                href="/auth/login"
+                className="font-semibold text-emerald-700 underline transition hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                Przejdź do logowania
+              </a>
+            </div>
+          )}
         </div>
       ) : null}
       <p className="text-center text-sm text-muted-foreground">

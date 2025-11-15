@@ -4,6 +4,50 @@ type IsoDateString = string;
 
 export type FlashcardSource = "manual" | "ai-full" | "ai-edited";
 
+/**
+ * Bezpieczna reprezentacja użytkownika (bez wrażliwych danych).
+ */
+export type UserSafe = {
+  id: string;
+  email: string | null;
+};
+
+/**
+ * Kody błędów autentykacji dla zunifikowanej obsługi błędów.
+ */
+export type AuthErrorCode =
+  | "invalid_credentials"
+  | "email_in_use"
+  | "email_not_verified"
+  | "rate_limited"
+  | "invalid_input"
+  | "unknown";
+
+/**
+ * Standardowy format błędów zgodny z RFC 7807 (Problem Details for HTTP APIs).
+ */
+export type ProblemJson = {
+  success: false;
+  errorCode: AuthErrorCode;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+/**
+ * Standardowy format odpowiedzi sukcesu.
+ */
+export type AuthOk<T> = {
+  success: true;
+  data: T;
+};
+
+/**
+ * Odpowiedź z danymi sesji użytkownika.
+ */
+export type SessionResponse = {
+  user: UserSafe;
+};
+
 type GenerationRow = Tables<"generations">;
 type FlashcardRow = Tables<"flashcards">;
 type GenerationErrorLogRow = Tables<"generation_error_logs">;
@@ -179,4 +223,50 @@ export type VersionResponseDto = {
   version: string;
   commit: string;
   env: string;
+};
+
+// Auth types
+
+/**
+ * Bezpieczna reprezentacja użytkownika (bez wrażliwych danych).
+ */
+export type UserSafe = {
+  id: string;
+  email: string | null;
+};
+
+/**
+ * Kody błędów autentykacji.
+ */
+export type AuthErrorCode =
+  | "invalid_credentials"
+  | "email_in_use"
+  | "email_not_verified"
+  | "rate_limited"
+  | "invalid_input"
+  | "unknown";
+
+/**
+ * Standardowa struktura błędu (Problem JSON).
+ */
+export type ProblemJson = {
+  success: false;
+  errorCode: AuthErrorCode;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+/**
+ * Standardowa struktura sukcesu.
+ */
+export type AuthOk<T> = {
+  success: true;
+  data: T;
+};
+
+/**
+ * Odpowiedź sesji użytkownika.
+ */
+export type SessionResponse = {
+  user: UserSafe;
 };
