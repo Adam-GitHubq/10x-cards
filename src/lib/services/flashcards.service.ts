@@ -283,11 +283,36 @@ export async function updateFlashcard(
   const supabase = getSupabaseClient(ctx);
   const userId = resolveUserId();
 
+  const {
+    data: existing,
+    error: fetchError,
+  } = await supabase
+    .from("flashcards")
+    .select("id, source")
+    .eq("user_id", userId)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchError && !isPostgrestNotFoundError(fetchError)) {
+    throw new FlashcardServiceError(
+      ERROR_MESSAGES[ERROR_CODES.FLASHCARD_UPDATE_FAILED],
+      500,
+      ERROR_CODES.FLASHCARD_UPDATE_FAILED
+    );
+  }
+
+  if (!existing) {
+    return null;
+  }
+
+  const nextSource = existing.source === "manual" ? existing.source : "ai-edited";
+
   const { data, error } = await supabase
     .from("flashcards")
     .update({
       front: command.front,
       back: command.back,
+      source: nextSource,
     })
     .eq("user_id", userId)
     .eq("id", id)

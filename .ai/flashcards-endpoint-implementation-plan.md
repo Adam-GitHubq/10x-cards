@@ -212,3 +212,4 @@ Endpointy do zarządzania fiszkami użytkownika (tworzenie wielu na raz, listowa
 
 4. Spójność typów
    - Upewnić się, że DTO zgodne z `src/types.ts` (brak zmiany `UpdateFlashcardCommand` — aktualizujemy tylko `front`, `back`).
+

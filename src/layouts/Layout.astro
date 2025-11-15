@@ -7,29 +7,25 @@ interface Props {
 }
 
 const { title = "10x Astro Starter" } = Astro.props;
-const themeStorageKey = "10x-cards-theme";
-const themeInitializer = `
-  ;(() => {
-    if (typeof window === "undefined" || typeof document === "undefined") {
-      return;
-    }
+const themeInitializer = `(() => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return;
+  }
 
-    const STORAGE_KEY = "${themeStorageKey}";
-    const stored = localStorage.getItem(STORAGE_KEY);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const next =
-      stored === "light" || stored === "dark"
-        ? stored
-        : prefersDark
-        ? "dark"
-        : "light";
+  const STORAGE_KEY = "10x-cards-theme";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const next =
+    stored === "light" || stored === "dark"
+      ? stored
+      : prefersDark
+      ? "dark"
+      : "light";
 
-    document.documentElement.dataset.theme = next;
-    document.documentElement.classList.toggle("dark", next === "dark");
-  })();
-`;
+  document.documentElement.dataset.theme = next;
+  document.documentElement.classList.toggle("dark", next === "dark");
+})();`;
 ---
-
 <!doctype html>
 <html lang="en">
   <head>
