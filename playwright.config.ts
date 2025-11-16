@@ -17,6 +17,7 @@ if (!process.env.GITHUB_ACTIONS) {
  * - CI: configured in GitHub Actions secrets
  */
 const TEST_ENV = {
+  USE_NODE_ADAPTER: process.env.USE_NODE_ADAPTER || "true",
   SUPABASE_URL: process.env.SUPABASE_URL || "",
   SUPABASE_KEY: process.env.SUPABASE_KEY || "",
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",

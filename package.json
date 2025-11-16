@@ -3,9 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "dev:e2e": "astro dev --mode test",
+    "dev": "cross-env USE_NODE_ADAPTER=true astro dev",
+    "dev:e2e": "cross-env USE_NODE_ADAPTER=true astro dev --mode test",
     "build": "astro build",
+    "build:node": "cross-env USE_NODE_ADAPTER=true astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint .",
@@ -18,9 +19,9 @@
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:reset": "npx supabase db reset",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
+    "test:e2e": "cross-env USE_NODE_ADAPTER=true playwright test",
+    "test:e2e:ui": "cross-env USE_NODE_ADAPTER=true playwright test --ui",
+    "test:e2e:debug": "cross-env USE_NODE_ADAPTER=true playwright test --debug",
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {

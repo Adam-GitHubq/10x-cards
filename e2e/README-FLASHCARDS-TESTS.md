@@ -4,6 +4,8 @@
 
 Niniejszy dokument opisuje testy E2E (End-to-End) dla modułu zarządzania fiszkami w aplikacji 10xCards. Testy obejmują pełny zakres funkcjonalności: operacje CRUD, filtrowanie, sortowanie oraz paginację.
 
+> **Ważne:** Testy E2E używają adaptera Node zamiast Cloudflare. Zobacz [ADAPTER-CONFIGURATION.md](../docs/ADAPTER-CONFIGURATION.md) dla szczegółów konfiguracji.
+
 ## 2. Struktura testów
 
 ### 2.1. Pliki testowe

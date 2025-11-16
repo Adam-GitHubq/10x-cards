@@ -12,10 +12,10 @@ export async function computeMD5(input: string): Promise<{ output: string }> {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  
+
   // Convert buffer to hex string
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  const hash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
   return { output: hash };
 }

@@ -1,5 +1,31 @@
 # Changelog - Testy E2E dla modułu Fiszek
 
+## 2025-11-16 - Wersja 1.1
+
+### 🔧 Naprawy
+
+#### Konfiguracja adaptera dla testów E2E
+**Problem:** Po przejściu na adapter Cloudflare, testy E2E przestały działać. Testy czekały na odpowiedź z API, która nigdy nie przychodziła (timeout 10s).
+
+**Rozwiązanie:** Zaimplementowano dynamiczny wybór adaptera:
+- **Development & Testing**: Adapter Node (`@astrojs/node`)
+- **Production**: Adapter Cloudflare (`@astrojs/cloudflare`)
+
+**Zmodyfikowane pliki:**
+- `astro.config.mjs` - dodano logikę wyboru adaptera na podstawie `USE_NODE_ADAPTER`
+- `package.json` - zaktualizowano skrypty `dev`, `dev:e2e`, `test:e2e*` aby używały `cross-env USE_NODE_ADAPTER=true`
+- `playwright.config.ts` - dodano `USE_NODE_ADAPTER` do zmiennych środowiskowych testów
+- `.github/workflows/pull-request.yml` - dodano `USE_NODE_ADAPTER: true` do job'a `e2e-test`
+
+**Dokumentacja:**
+- Utworzono `docs/ADAPTER-CONFIGURATION.md` z pełnym opisem rozwiązania
+
+**Status testów:**
+- ✅ Wszystkie testy z `login.spec.ts` przechodzą (6/6)
+- ✅ Wszystkie testy z `auth.spec.ts` przechodzą (16/16)
+
+---
+
 ## 2025-11-16 - Wersja 1.0
 
 ### ✨ Nowe funkcjonalności
