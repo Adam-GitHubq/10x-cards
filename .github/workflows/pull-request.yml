@@ -124,32 +124,34 @@ jobs:
           script: |
             const fs = require('fs');
             
-            // Read coverage summary if available
-            let coverageText = '';
+            // Read unit test coverage summary
+            let unitCoverageText = '';
             try {
               const coverageSummary = JSON.parse(fs.readFileSync('coverage/coverage-summary.json', 'utf8'));
               const total = coverageSummary.total;
-              coverageText = `
-            ### 📊 Coverage Summary
-            - **Lines**: ${total.lines.pct}%
-            - **Statements**: ${total.statements.pct}%
-            - **Functions**: ${total.functions.pct}%
-            - **Branches**: ${total.branches.pct}%
+              unitCoverageText = `
+            ### 📊 Unit Test Coverage
+            | Metric | Coverage |
+            |--------|----------|
+            | Lines | ${total.lines.pct}% |
+            | Statements | ${total.statements.pct}% |
+            | Functions | ${total.functions.pct}% |
+            | Branches | ${total.branches.pct}% |
             `;
             } catch (error) {
-              coverageText = '\n_Coverage data not available_';
+              unitCoverageText = '\n### 📊 Unit Test Coverage\n_Coverage data not available_';
             }
             
             const comment = `## ✅ All checks passed!
             
             All CI checks have completed successfully:
-            - ✅ Linting
-            - ✅ Unit Tests
-            - ✅ E2E Tests
-            ${coverageText}
+            - ✅ **Linting** - Code quality check passed
+            - ✅ **Unit Tests** - All unit tests passed
+            - ✅ **E2E Tests** - All end-to-end tests passed
+            ${unitCoverageText}
             
-            **Commit**: ${context.sha.substring(0, 7)}
-            **Workflow**: [${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            ---
+            **Commit**: ${context.sha.substring(0, 7)} | **Workflow Run**: [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})
             `;
             
             github.rest.issues.createComment({
