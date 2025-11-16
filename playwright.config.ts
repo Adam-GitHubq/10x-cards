@@ -1,25 +1,24 @@
 import { defineConfig, devices } from "@playwright/test";
+import * as dotenv from "dotenv";
+import * as path from "path";
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
+ * Read environment variables from .env.test file
+ * This allows E2E tests to use external Supabase instance
  */
-// require('dotenv').config();
+dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 
 /**
  * Configure test environment variables
- * For E2E tests, we use local Supabase instance to avoid polluting production/dev data
+ * For E2E tests, we use external Supabase instance configured in .env.test
  */
 const TEST_ENV = {
-  // Local Supabase (started with 'npm run supabase:start')
-  SUPABASE_URL: "http://127.0.0.1:54321",
-  SUPABASE_KEY:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
-  SUPABASE_SERVICE_ROLE_KEY:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU",
-  DEFAULT_SUPABASE_USER_ID: "00000000-0000-0000-0000-000000000000",
-  // Preserve other env vars from current environment
+  SUPABASE_URL: process.env.SUPABASE_URL || "",
+  SUPABASE_KEY: process.env.SUPABASE_KEY || "",
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+  E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || "",
+  E2E_USERNAME: process.env.E2E_USERNAME || "",
+  E2E_PASSWORD: process.env.E2E_PASSWORD || "",
 };
 
 /**
@@ -62,7 +61,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev -- --port 3001",
+    command: "npm run dev:e2e -- --port 3001",
     url: "http://localhost:3001",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

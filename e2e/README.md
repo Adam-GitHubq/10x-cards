@@ -4,12 +4,13 @@ Ten katalog zawiera testy end-to-end (E2E) dla aplikacji 10xCards.
 
 ## 🚀 Szybki start
 
-**Pierwszy raz?** Zobacz [QUICKSTART.md](./QUICKSTART.md) - kompletny przewodnik w 2 minuty.
+**Pierwszy raz?** Skonfiguruj `.env.test` z danymi do zewnętrznego Supabase (zobacz sekcję "Przygotowanie środowiska testowego").
 
 **TL;DR:**
 ```bash
-npm run supabase:start  # Uruchom lokalną bazę (pierwszy raz)
-npm run test:e2e        # Uruchom testy
+# 1. Utwórz plik .env.test z danymi do Supabase testowego
+# 2. Uruchom testy
+npm run test:e2e
 ```
 
 ## Struktura katalogów
@@ -49,22 +50,46 @@ export class LoginPage extends BasePage {
 
 ## Przygotowanie środowiska testowego
 
-Testy e2e używają **lokalnej instancji Supabase** aby nie mieszać danych testowych z danymi deweloperskimi.
+Testy e2e używają **zewnętrznej instancji Supabase** - dedykowanej bazy testowej w chmurze.
 
-### Pierwszy raz - uruchom Supabase Local:
+### Konfiguracja środowiska testowego
 
+1. **Utwórz plik `.env.test`** w głównym katalogu projektu:
 ```bash
-# Uruchom lokalną instancję Supabase (PostgreSQL + Auth + API)
-npm run supabase:start
+# Skopiuj strukturę z .env.example
+SUPABASE_URL=https://twoj-projekt-testowy.supabase.co
+SUPABASE_KEY=twoj-anon-key-testowy
+OPENROUTER_API_KEY=twoj-openrouter-key
+E2E_USERNAME_ID=uuid-uzytkownika-testowego
+E2E_USERNAME=test@example.com
+E2E_PASSWORD=test-password-123
 ```
 
-To polecenie:
-- Pobierze obrazy Docker (pierwszym razem)
-- Uruchomi lokalną bazę PostgreSQL na porcie 54322
-- Uruchomi Supabase API na porcie 54321
-- Zastosuje wszystkie migracje z `supabase/migrations/`
+2. **Przygotuj bazę testową w Supabase**:
+   - Utwórz dedykowany projekt Supabase dla testów E2E
+   - Zastosuj migracje z `supabase/migrations/` (możesz użyć Supabase CLI lub Dashboard)
+   - Utwórz użytkownika testowego:
+     - Email: wartość z E2E_USERNAME
+     - Hasło: wartość z E2E_PASSWORD
+   - Skopiuj UUID użytkownika do E2E_USERNAME_ID (znajdziesz w Authentication > Users)
 
-**Uwaga**: Supabase Local działa w tle. Możesz go zatrzymać przez `npm run supabase:stop`
+3. **Uruchom testy**:
+```bash
+# Playwright automatycznie uruchomi serwer dev w trybie testowym
+npm run test:e2e
+
+# Lub uruchom serwer ręcznie w jednym terminalu:
+npm run dev:e2e
+
+# I testy w drugim terminalu:
+npm run test:e2e
+```
+
+**Ważne**:
+- Plik `.env.test` jest ignorowany przez git - **nie commituj danych dostępowych!**
+- Vite automatycznie ładuje `.env.test` gdy mode jest ustawiony na `test`
+- Playwright uruchamia serwer z `npm run dev:e2e` (tryb test) przed testami
+- Używaj dedykowanego projektu Supabase tylko dla testów, aby nie mieszać danych testowych z produkcyjnymi
 
 ## Uruchamianie testów
 
@@ -80,10 +105,9 @@ npm run test:e2e:debug
 
 # Wyświetl raport z ostatnich testów
 npm run test:e2e:report
-
-# Reset bazy testowej (usuń wszystkie dane i zastosuj migracje ponownie)
-npm run supabase:reset
 ```
+
+**Uwaga**: Jeśli potrzebujesz zresetować dane testowe, zrób to bezpośrednio w Supabase Dashboard lub użyj Supabase CLI dla swojego projektu testowego.
 
 ## Pisanie testów
 
@@ -156,7 +180,7 @@ Konfiguracja Playwright znajduje się w `playwright.config.ts` w katalogu głów
 ### Główne ustawienia:
 - **Browser**: Tylko Chromium (Desktop Chrome)
 - **Base URL**: http://localhost:3001 (dedykowany port dla testów e2e)
-- **Database**: Supabase Local na http://127.0.0.1:54321 (izolowana od dev/prod)
+- **Database**: Zewnętrzny Supabase (konfiguracja w `.env.test`)
 - **Parallel execution**: Włączone
 - **Retries**: 2 na CI, 0 lokalnie
 - **Screenshots**: Tylko przy błędach
@@ -170,14 +194,16 @@ Testy e2e są w pełni odizolowane od środowiska deweloperskiego:
 | Aspekt | Dev | E2E Tests |
 |--------|-----|-----------|
 | Port aplikacji | 3000 | 3001 |
-| Baza danych | Produkcyjna/Dev Supabase | Supabase Local (127.0.0.1:54321) |
-| Zmienne środowiskowe | `.env` | `TEST_ENV` w `playwright.config.ts` |
+| Baza danych | Produkcyjna/Dev Supabase | Dedykowany projekt Supabase testowy |
+| Zmienne środowiskowe | `.env` | `.env.test` (ładowane przez Vite i Playwright) |
+| Tryb Astro | `development` | `test` |
 
 **Zalety**:
-- ✅ Dane testowe nie mieszają się z danymi deweloperskimi
-- ✅ Można uruchomić dev server i testy jednocześnie
-- ✅ Szybkie resetowanie bazy testowej (`npm run supabase:reset`)
+- ✅ Dane testowe nie mieszają się z danymi deweloperskimi ani produkcyjnymi
+- ✅ Można uruchomić dev server i testy jednocześnie (różne porty)
+- ✅ Dedykowany projekt Supabase tylko dla testów
 - ✅ Pełna kontrola nad danymi testowymi
+- ✅ Realistyczne środowisko testowe (prawdziwa baza w chmurze)
 
 ## Debugowanie
 
