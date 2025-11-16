@@ -189,17 +189,17 @@ npm test flashcardsGenerator.integration.test.ts
 
 ## Deployment
 
-### Vercel (zalecane)
+### Cloudflare Pages (zalecane)
 
-1. Push do GitHub
-2. Import projektu w Vercel
-3. Dodaj zmienne środowiskowe
-4. Deploy! 🚀
+1. Zrób push zmian do repozytorium GitHub.
+2. Zaimportuj repozytorium jako nowy projekt w panelu Cloudflare Pages.
+3. Skonfiguruj zmienne środowiskowe (`SUPABASE_URL`, `SUPABASE_KEY`, `OPENROUTER_API_KEY`).
+4. Wdróż aplikację! 🚀
 
 ### Inne platformy
 
+- Vercel
 - Netlify
-- Cloudflare Pages
 - Railway
 - Render
 

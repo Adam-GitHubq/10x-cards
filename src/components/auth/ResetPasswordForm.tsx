@@ -1,31 +1,33 @@
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { resetRequestSchema, type ResetRequestFormValues } from "@/lib/validation/authSchemas";
+import { passwordHint, resetCompleteSchema, type ResetCompleteFormValues } from "@/lib/validation/authSchemas";
 
-type ResetPasswordRequestFormProps = {
+type ResetPasswordFormProps = {
   onSuccess?: () => void;
 };
 
 type FormStatus = { type: "idle" } | { type: "success"; message: string } | { type: "error"; message: string };
 
-const defaultValues: ResetRequestFormValues = {
-  email: "",
+const defaultValues: ResetCompleteFormValues = {
+  newPassword: "",
+  confirmPassword: "",
 };
 
-export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordRequestFormProps) {
-  const form = useForm<ResetRequestFormValues>({
-    resolver: zodResolver(resetRequestSchema),
+export default function ResetPasswordForm({ onSuccess }: ResetPasswordFormProps) {
+  const form = useForm<ResetCompleteFormValues>({
+    resolver: zodResolver(resetCompleteSchema),
     defaultValues,
   });
 
   const [status, setStatus] = useState<FormStatus>({ type: "idle" });
   const [isPending, startTransition] = useTransition();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const isSubmitting = form.formState.isSubmitting || isPending;
 
@@ -42,11 +44,11 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
   }, [status]);
 
   const handleSubmit = useCallback(
-    async (values: ResetRequestFormValues) => {
+    async (values: ResetCompleteFormValues) => {
       setStatus({ type: "idle" });
 
       try {
-        const response = await fetch("/api/auth/reset/request", {
+        const response = await fetch("/api/auth/reset/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
@@ -58,7 +60,7 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
           startTransition(() => {
             setStatus({
               type: "error",
-              message: data.message || "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+              message: data.message || "Nie udało się zmienić hasła. Spróbuj ponownie.",
             });
           });
           return;
@@ -67,9 +69,10 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
         startTransition(() => {
           setStatus({
             type: "success",
-            message:
-              data.data.message || "Jeśli konto istnieje, wyślemy wiadomość z linkiem do ustawienia nowego hasła.",
+            message: "Hasło zostało zmienione. Za chwilę zostaniesz przekierowany do logowania.",
           });
+          setShouldRedirect(true);
+
           if (onSuccess) {
             onSuccess();
           }
@@ -86,22 +89,52 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
     [onSuccess, startTransition]
   );
 
+  // Effect do przekierowania po sukcesie
+  useEffect(() => {
+    if (shouldRedirect) {
+      const timer = setTimeout(() => {
+        window.location.href = "/auth/login?reset=success";
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldRedirect]);
+
   return (
     <div className="space-y-6 rounded-2xl border border-border/40 bg-card/80 p-6 shadow-sm backdrop-blur-sm">
       <Form {...form}>
         <form className="space-y-6" noValidate onSubmit={form.handleSubmit(handleSubmit)}>
           <FormField
             control={form.control}
-            name="email"
+            name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>E-mail</FormLabel>
+                <FormLabel>Nowe hasło</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    inputMode="email"
-                    autoComplete="email"
-                    placeholder="jan.kowalski@example.com"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    disabled={isSubmitting}
+                  />
+                </FormControl>
+                <FormDescription>{passwordHint}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Potwierdź hasło</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="••••••••"
                     disabled={isSubmitting}
                   />
                 </FormControl>
@@ -110,7 +143,7 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
             )}
           />
           <Button className="w-full" disabled={isSubmitting} type="submit">
-            {isSubmitting ? "Wysyłanie…" : "Wyślij instrukcje"}
+            {isSubmitting ? "Zapisywanie…" : "Ustaw nowe hasło"}
           </Button>
         </form>
       </Form>

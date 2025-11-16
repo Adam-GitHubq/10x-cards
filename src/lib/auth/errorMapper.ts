@@ -80,3 +80,57 @@ export function mapSignupError(error: unknown): { errorCode: AuthErrorCode; mess
     message: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
   };
 }
+
+/**
+ * Mapuje błędy Supabase Auth na nasze kody błędów dla endpointu reset request.
+ */
+export function mapResetRequestError(error: unknown): { errorCode: AuthErrorCode; message: string } {
+  if (isAuthApiError(error)) {
+    if (error.status === 429) {
+      return {
+        errorCode: "rate_limited",
+        message: "Zbyt wiele prób – spróbuj ponownie później.",
+      };
+    }
+  }
+
+  // Domyślny błąd
+  return {
+    errorCode: "unknown",
+    message: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
+  };
+}
+
+/**
+ * Mapuje błędy Supabase Auth na nasze kody błędów dla endpointu reset complete.
+ */
+export function mapResetCompleteError(error: unknown): { errorCode: AuthErrorCode; message: string } {
+  if (isAuthApiError(error)) {
+    if (error.message.includes("Password should be at least")) {
+      return {
+        errorCode: "invalid_input",
+        message: "Hasło jest zbyt słabe. Użyj co najmniej 8 znaków z literą i cyfrą.",
+      };
+    }
+
+    if (error.message.includes("New password should be different")) {
+      return {
+        errorCode: "invalid_input",
+        message: "Nowe hasło musi być inne niż poprzednie.",
+      };
+    }
+
+    if (error.status === 429) {
+      return {
+        errorCode: "rate_limited",
+        message: "Zbyt wiele prób – spróbuj ponownie później.",
+      };
+    }
+  }
+
+  // Domyślny błąd
+  return {
+    errorCode: "unknown",
+    message: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
+  };
+}
