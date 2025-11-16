@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Filter, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const SOURCE_OPTIONS: { value: FlashcardSource; label: string }[] = [
   { value: "ai-edited", label: "AI (edytowane)" },
 ];
 
-const DEBOUNCE_DELAY = 220;
+const DEBOUNCE_DELAY = 1500;
 
 function toFormState(filters: FlashcardsFiltersVM): FiltersFormState {
   return {
@@ -59,14 +59,76 @@ function normalizeForm(form: FiltersFormState, base: FlashcardsFiltersVM): Flash
   };
 }
 
+// Wydzielony komponent dla inputa ID generacji, żeby uniknąć utraty focusa
+const GenerationIdInput = memo(
+  ({
+    value,
+    onChange,
+    disabled,
+    inputRef,
+  }: {
+    value: string;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    disabled?: boolean;
+    inputRef?: React.RefObject<HTMLInputElement>;
+  }) => {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor="flashcards-generation">ID generacji</Label>
+        <Input
+          ref={inputRef}
+          id="flashcards-generation"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          placeholder="np. 42"
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+        />
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Nie re-renderuj jeśli tylko disabled się zmienił, ale wartość i handler są takie same
+    // To zapobiega utracie focusa gdy zmienia się stan busy
+    return (
+      prevProps.value === nextProps.value &&
+      prevProps.onChange === nextProps.onChange &&
+      prevProps.inputRef === nextProps.inputRef
+    );
+  }
+);
+
+GenerationIdInput.displayName = "GenerationIdInput";
+
 export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) {
   const [formState, setFormState] = useState<FiltersFormState>(() => toFormState(value));
   const debounceRef = useRef<number | null>(null);
+  const isTypingRef = useRef<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const shouldRestoreFocusRef = useRef<boolean>(false);
+
+  // Przywróć focus po re-renderze jeśli był aktywny
+  useEffect(() => {
+    if (shouldRestoreFocusRef.current && inputRef.current && !inputRef.current.disabled) {
+      inputRef.current.focus();
+      shouldRestoreFocusRef.current = false;
+    }
+  });
 
   useEffect(() => {
+    // Nie aktualizuj formState jeśli użytkownik aktywnie wpisuje dane
+    if (isTypingRef.current) {
+      return;
+    }
+
     const next = toFormState(value);
 
     if (!isFormEqual(next, formState)) {
+      // Zapamiętaj czy input miał focus przed aktualizacją
+      if (document.activeElement === inputRef.current) {
+        shouldRestoreFocusRef.current = true;
+      }
       setFormState(next);
     }
   }, [value, formState]);
@@ -86,12 +148,14 @@ export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) 
       }
 
       const trigger = () => {
+        isTypingRef.current = false;
         onChange(normalizeForm(nextForm, value));
       };
 
       if (immediate) {
         trigger();
       } else {
+        isTypingRef.current = true;
         debounceRef.current = window.setTimeout(trigger, DEBOUNCE_DELAY);
       }
     },
@@ -139,6 +203,7 @@ export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) 
       window.clearTimeout(debounceRef.current);
     }
 
+    isTypingRef.current = false;
     onReset();
   }, [onReset]);
 
@@ -170,18 +235,12 @@ export function FiltersBar({ value, onChange, onReset, busy }: FiltersBarProps) 
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="flashcards-generation">ID generacji</Label>
-          <Input
-            id="flashcards-generation"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            placeholder="np. 42"
-            value={formState.generationId}
-            onChange={handleGenerationChange}
-            disabled={busy}
-          />
-        </div>
+        <GenerationIdInput
+          value={formState.generationId}
+          onChange={handleGenerationChange}
+          disabled={busy}
+          inputRef={inputRef}
+        />
 
         <div className="space-y-2">
           <Label htmlFor="flashcards-order">Kolejność</Label>
