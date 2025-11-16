@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Pamietaj że mamy kilka wersji node w tym środowisku i musimy używać nvs use 22.9.0, ja o tym pamietam w terminalach natomiast ty nie sprawdzaj jaki jest a zawsze jeżeli chcesz użyć node, npm pierwszy raz w kontekscie poprostu wywołaj to może poprzez nvs use 22.9.0 && {{command}}

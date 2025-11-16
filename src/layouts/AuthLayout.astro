@@ -1,99 +1,23 @@
 ---
-import "../styles/global.css";
-import ThemeToggle from "../components/ui/ThemeToggle";
+import Layout from "./Layout.astro";
 
 interface Props {
-  title?: string;
+  title: string;
   description?: string;
 }
 
-const { title = "Witaj ponownie", description } = Astro.props;
-
-const themeScript = `(()=>{if(typeof window==="undefined"||typeof document==="undefined")return;const STORAGE_KEY="10x-cards-theme";const stored=localStorage.getItem(STORAGE_KEY);const prefersDark=window.matchMedia("(prefers-color-scheme: dark)").matches;const next=stored==="light"||stored==="dark"?stored:prefersDark?"dark":"light";document.documentElement.dataset.theme=next;document.documentElement.classList.toggle("dark",next==="dark")})();`;
+const { title, description } = Astro.props;
 ---
 
-<!doctype html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{title} • 10xCards</title>
-    <script is:inline set:html={themeScript} />
-  </head>
-  <body class="relative min-h-screen bg-background text-foreground antialiased">
-    <div
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,theme(colors.primary/20),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,theme(colors.primary/25),transparent_60%)]"
-    >
+<Layout title={title}>
+  <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+      {description && (
+        <p class="mb-6 text-center text-sm text-muted-foreground">
+          {description}
+        </p>
+      )}
+      <slot />
     </div>
-    <div
-      class="mx-auto flex min-h-screen w-full max-w-6xl flex-col overflow-hidden rounded-none px-4 py-8 sm:px-6 lg:flex-row lg:rounded-3xl lg:border lg:border-border/50 lg:py-12"
-    >
-      <aside
-        class="relative hidden w-full max-w-xl flex-1 flex-col justify-between border-b border-border/40 bg-card lg:flex lg:rounded-2xl lg:border lg:border-border/40 lg:bg-card/60 lg:p-12"
-      >
-        <div class="flex items-center justify-between gap-4">
-          <a href="/" class="flex items-center gap-3 text-lg font-semibold text-foreground">
-            <span
-              class="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-2xl font-bold text-primary shadow-xs"
-            >
-              10x
-            </span>
-            <span class="tracking-tight">10xCards</span>
-          </a>
-          <div class="hidden lg:inline-flex">
-            <ThemeToggle client:load />
-          </div>
-        </div>
-        <div class="mt-24 flex flex-col gap-6">
-          <h2 class="text-3xl font-semibold tracking-tight text-foreground">
-            Ucz się szybciej dzięki fiszkom generowanym przez AI.
-          </h2>
-          <p class="text-base text-muted-foreground">
-            Zamień notatki w gotowe zestawy fiszek w kilka chwil. Zyskaj spójny workflow do powtórek i śledź swoje
-            postępy.
-          </p>
-          <ul class="space-y-4 text-sm text-muted-foreground">
-            <li class="flex items-start gap-3">
-              <span class="mt-1 size-2 rounded-full bg-primary"></span>
-              Inteligentne generowanie treści dopasowanej do poziomu trudności.
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="mt-1 size-2 rounded-full bg-primary"></span>
-              Możliwość edycji i zatwierdzania fiszek przed zapisem.
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="mt-1 size-2 rounded-full bg-primary"></span>
-              Synchronizacja z Twoim kontem i dostęp na wszystkich urządzeniach.
-            </li>
-          </ul>
-        </div>
-        <div class="mt-12 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} 10xCards. Wszelkie prawa zastrzeżone.
-        </div>
-      </aside>
-      <main class="flex w-full flex-1 items-center justify-center px-2 py-6 sm:px-6 lg:px-12">
-        <div class="w-full max-w-md">
-          <div class="mb-8 flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-4 lg:hidden">
-              <a href="/" class="flex items-center gap-3 text-lg font-semibold text-foreground">
-                <span
-                  class="flex size-10 items-center justify-center rounded-xl bg-primary/15 text-2xl font-bold text-primary shadow-xs"
-                >
-                  10x
-                </span>
-                <span class="tracking-tight">10xCards</span>
-              </a>
-              <ThemeToggle client:load />
-            </div>
-            <h1 class="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
-            {description ? <p class="text-sm text-muted-foreground">{description}</p> : null}
-          </div>
-          <slot />
-        </div>
-      </main>
-    </div>
-  </body>
-</html>
+  </div>
+</Layout>
