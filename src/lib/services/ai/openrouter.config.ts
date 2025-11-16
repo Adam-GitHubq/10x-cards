@@ -73,13 +73,14 @@ const DEFAULT_MODEL_CONFIG = {
 /**
  * Tworzy i konfiguruje instancję serwisu OpenRouter dla generowania fiszek
  *
+ * @param apiKey - Klucz API OpenRouter (opcjonalny, domyślnie z import.meta.env)
  * @returns Skonfigurowana instancja OpenRouterService
- * @throws {Error} Gdy brak klucza API w zmiennych środowiskowych
+ * @throws {Error} Gdy brak klucza API
  */
-export function createFlashcardsOpenRouterService(): OpenRouterService {
-  const apiKey = import.meta.env.OPENROUTER_API_KEY;
+export function createFlashcardsOpenRouterService(apiKey?: string): OpenRouterService {
+  const key = apiKey || import.meta.env.OPENROUTER_API_KEY;
 
-  if (!apiKey) {
+  if (!key) {
     throw new Error(
       "Brak klucza OPENROUTER_API_KEY w zmiennych środowiskowych. " +
         "Upewnij się, że zmienna jest ustawiona w pliku .env"
@@ -87,7 +88,7 @@ export function createFlashcardsOpenRouterService(): OpenRouterService {
   }
 
   const service = new OpenRouterService({
-    apiKey,
+    apiKey: key,
     systemMessage: SYSTEM_MESSAGE,
     modelOptions: DEFAULT_MODEL_CONFIG,
   });

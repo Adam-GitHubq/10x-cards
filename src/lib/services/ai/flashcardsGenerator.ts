@@ -15,6 +15,8 @@ import { OpenRouterServiceError } from "../openrouter.service";
 type GenerateFlashcardProposalsParams = {
   /** Tekst źródłowy do przekształcenia w fiszki */
   sourceText: string;
+  /** Klucz API OpenRouter (opcjonalny, dla Cloudflare runtime) */
+  apiKey?: string;
 };
 
 /**
@@ -76,6 +78,7 @@ const MIN_TEXT_LENGTH = 50;
  */
 export async function generateFlashcardProposals({
   sourceText,
+  apiKey,
 }: GenerateFlashcardProposalsParams): Promise<FlashcardProposalDto[]> {
   // Walidacja wejścia
   if (typeof sourceText !== "string" || sourceText.trim().length === 0) {
@@ -91,7 +94,7 @@ export async function generateFlashcardProposals({
 
   try {
     // Inicjalizacja serwisu OpenRouter
-    const service = createFlashcardsOpenRouterService();
+    const service = createFlashcardsOpenRouterService(apiKey);
 
     // Przygotowanie promptu
     const prompt = buildPrompt(trimmedText);

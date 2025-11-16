@@ -160,7 +160,9 @@ export async function createGeneration(
   let flashcardsProposals;
 
   try {
-    flashcardsProposals = await generateFlashcardProposals({ sourceText });
+    // Get API key from runtime env (Cloudflare) or import.meta.env (local)
+    const apiKey = ctx.locals.runtime?.env?.OPENROUTER_API_KEY;
+    flashcardsProposals = await generateFlashcardProposals({ sourceText, apiKey });
   } catch (error) {
     // Określenie kodu błędu na podstawie typu błędu
     const errorCode = ERROR_CODES.AI_GENERATION_FAILED;

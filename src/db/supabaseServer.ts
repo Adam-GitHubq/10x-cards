@@ -22,10 +22,18 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
  * WAŻNE: Tworzony PER-REQUEST, aby zapewnić izolację sesji między użytkownikami.
  *
  * @param context - Kontekst zawierający headers i cookies z żądania/odpowiedzi Astro
+ * @param env - Zmienne środowiskowe (opcjonalne, domyślnie z import.meta.env)
  * @returns Instancja Supabase client z integracją cookies SSR
  */
-export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
-  const supabase = createServerClient<Database>(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_KEY, {
+export const createSupabaseServerInstance = (
+  context: { headers: Headers; cookies: AstroCookies },
+  env?: { SUPABASE_URL: string; SUPABASE_KEY: string }
+) => {
+  // Use provided env or fallback to import.meta.env (for local development)
+  const supabaseUrl = env?.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const supabaseKey = env?.SUPABASE_KEY || import.meta.env.SUPABASE_KEY;
+
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
     cookieOptions,
     cookies: {
       getAll() {

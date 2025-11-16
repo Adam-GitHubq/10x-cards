@@ -14,10 +14,14 @@ function isProtectedPath(pathname: string): boolean {
 
 export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
   // Utwórz Supabase Server Client per-request (izolacja sesji)
-  const supabase = createSupabaseServerInstance({
-    cookies,
-    headers: request.headers,
-  });
+  // Pass runtime env for Cloudflare Pages compatibility
+  const supabase = createSupabaseServerInstance(
+    {
+      cookies,
+      headers: request.headers,
+    },
+    locals.runtime?.env
+  );
 
   // WAŻNE: Zawsze pobierz użytkownika przed innymi operacjami
   const {
