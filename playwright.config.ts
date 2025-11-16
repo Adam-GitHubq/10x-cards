@@ -3,14 +3,18 @@ import * as dotenv from "dotenv";
 import * as path from "path";
 
 /**
- * Read environment variables from .env.test file
- * This allows E2E tests to use external Supabase instance
+ * Read environment variables from .env.test file for local development
+ * In CI, variables are provided by GitHub Actions environment
  */
-dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
+if (!process.env.CI) {
+  dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
+}
 
 /**
  * Configure test environment variables
- * For E2E tests, we use external Supabase instance configured in .env.test
+ * For E2E tests, we use external Supabase instance
+ * - Local: configured in .env.test
+ * - CI: configured in GitHub Actions secrets
  */
 const TEST_ENV = {
   SUPABASE_URL: process.env.SUPABASE_URL || "",
