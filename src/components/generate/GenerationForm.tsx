@@ -56,6 +56,7 @@ export function GenerationForm({ value, onChange, onSubmit, isLoading, errors = 
           aria-describedby={`${helpTextId}${showRangeError ? ` ${rangeErrorId}` : ""}`}
           aria-invalid={showRangeError}
           disabled={isLoading}
+          data-testid="generate-source-text"
           className={cn(
             "resize-y",
             showRangeError ? "border-red-500 focus-visible:ring-red-600" : "border-neutral-300"
@@ -85,7 +86,7 @@ export function GenerationForm({ value, onChange, onSubmit, isLoading, errors = 
         </div>
       ) : null}
       <div className="flex w-full justify-start">
-        <Button type="submit" disabled={disableSubmit}>
+        <Button type="submit" disabled={disableSubmit} data-testid="generate-submit-button">
           {isLoading ? "Generowanie…" : "Generuj"}
         </Button>
       </div>

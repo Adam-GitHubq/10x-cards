@@ -110,10 +110,12 @@ export default function LoginForm({ onSuccess: _onSuccess }: LoginFormProps) {
                   <FormControl>
                     <Input
                       {...field}
+                      type="email"
                       inputMode="email"
                       autoComplete="email"
                       placeholder="jan.kowalski@example.com"
                       disabled={isSubmitting}
+                      data-testid="login-email-input"
                     />
                   </FormControl>
                   <FormMessage />
@@ -135,14 +137,20 @@ export default function LoginForm({ onSuccess: _onSuccess }: LoginFormProps) {
                     </a>
                   </div>
                   <FormControl>
-                    <Input {...field} type="password" autoComplete="current-password" disabled={isSubmitting} />
+                    <Input
+                      {...field}
+                      type="password"
+                      autoComplete="current-password"
+                      disabled={isSubmitting}
+                      data-testid="login-password-input"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button className="w-full" disabled={isSubmitting} type="submit">
+          <Button className="w-full" disabled={isSubmitting} type="submit" data-testid="login-submit-button">
             {isSubmitting ? "Logowanie…" : "Zaloguj się"}
           </Button>
         </form>
@@ -150,6 +158,8 @@ export default function LoginForm({ onSuccess: _onSuccess }: LoginFormProps) {
       {status.type !== "idle" ? (
         <div
           role="status"
+          data-testid="login-status-message"
+          data-status-type={status.type}
           className={cn("rounded-xl border px-4 py-3 text-sm leading-relaxed transition", statusClasses)}
         >
           {status.message}

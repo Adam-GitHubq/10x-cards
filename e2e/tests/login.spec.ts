@@ -26,9 +26,6 @@ test.describe("Logowanie użytkownika", () => {
   test("powinien pokazać błąd przy nieprawidłowych danych", async ({ loginPage }) => {
     await loginPage.login("nieprawidlowy@email.com", "zlehaslo123");
 
-    // Czekaj na odpowiedź serwera
-    await loginPage.page.waitForLoadState("networkidle");
-
     // Sprawdź czy pojawił się komunikat błędu
     const hasError = await loginPage.hasErrorMessage();
     if (hasError) {
@@ -37,15 +34,40 @@ test.describe("Logowanie użytkownika", () => {
   });
 
   test("powinien przekierować po pomyślnym logowaniu", async ({ loginPage, page }) => {
-    // UWAGA: Ten test wymaga prawidłowych danych testowych
-    // Należy uzupełnić w momencie implementacji testów
-    test.skip(true, "Wymaga skonfigurowania użytkownika testowego");
+    const testEmail = process.env.E2E_USERNAME;
+    const testPassword = process.env.E2E_PASSWORD;
 
-    await loginPage.login("test@example.com", "password123");
+    if (!testEmail || !testPassword) {
+      test.skip(true, "E2E_USERNAME and E2E_PASSWORD must be set in .env.test");
+      return;
+    }
+
+    await loginPage.login(testEmail, testPassword);
 
     // Czekaj na nawigację po zalogowaniu
-    await page.waitForURL(/flashcards|generate/);
+    await page.waitForURL(/generate/, { timeout: 10000 });
 
     expect(page.url()).not.toContain("login");
+    expect(page.url()).toContain("generate");
+  });
+
+  test("powinien wyświetlić błąd przy nieprawidłowych danych logowania", async ({ loginPage }) => {
+    await loginPage.login("nieprawidlowy@email.com", "zlehaslo123");
+
+    // Sprawdź czy pojawił się komunikat błędu
+    const hasError = await loginPage.hasErrorMessage();
+    expect(hasError).toBeTruthy();
+
+    // Sprawdź treść błędu
+    const errorMessage = await loginPage.getErrorMessage();
+    expect(errorMessage).toBeTruthy();
+    expect(errorMessage?.toLowerCase()).toContain("nieprawidłowy");
+  });
+
+  test("powinien pozostać na stronie logowania po błędzie", async ({ loginPage, page }) => {
+    await loginPage.login("test@example.com", "wrongpassword");
+
+    // Użytkownik powinien pozostać na stronie logowania
+    expect(page.url()).toContain("/auth/login");
   });
 });

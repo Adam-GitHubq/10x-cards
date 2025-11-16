@@ -4,23 +4,46 @@ Ten katalog zawiera testy end-to-end (E2E) dla aplikacji 10xCards.
 
 ## 🚀 Szybki start
 
-**Pierwszy raz?** Skonfiguruj `.env.test` z danymi do zewnętrznego Supabase (zobacz sekcję "Przygotowanie środowiska testowego").
+**Pierwszy raz?** 
+1. Przeczytaj [SETUP.md](./SETUP.md) - szczegółowy przewodnik konfiguracji
+2. Skonfiguruj `.env.test` z danymi do zewnętrznego Supabase
+3. Utwórz użytkownika testowego
 
 **TL;DR:**
 ```bash
-# 1. Utwórz plik .env.test z danymi do Supabase testowego
-# 2. Uruchom testy
+# 1. Skopiuj i uzupełnij plik konfiguracyjny
+cp .env.test.example .env.test
+
+# 2. Utwórz użytkownika testowego w Supabase Dashboard
+# (szczegóły w SETUP.md)
+
+# 3. Uruchom testy
 npm run test:e2e
 ```
+
+## 📚 Dokumentacja
+
+- **[SETUP.md](./SETUP.md)** - Kompletny przewodnik konfiguracji testów
+- **[README-AUTH-TESTS.md](./README-AUTH-TESTS.md)** - Dokumentacja testów autoryzacji
+- **[QUICKSTART.md](./QUICKSTART.md)** - Szybki start dla doświadczonych użytkowników
 
 ## Struktura katalogów
 
 ```
 e2e/
 ├── pages/          # Page Objects - reprezentacja stron aplikacji
+│   ├── BasePage.ts
+│   ├── LoginPage.ts
+│   └── GeneratePage.ts
 ├── fixtures/       # Fixtures - rozszerzenia testów i współdzielona konfiguracja
+│   └── auth.fixture.ts
 ├── tests/          # Pliki testowe
-└── README.md       # Ten plik
+│   ├── login.spec.ts
+│   └── auth.spec.ts
+├── README.md       # Ten plik (ogólny przegląd)
+├── README-AUTH-TESTS.md  # Szczegółowa dokumentacja testów autoryzacji
+├── SETUP.md        # Przewodnik konfiguracji krok po kroku
+└── QUICKSTART.md   # Szybki start
 ```
 
 ## Page Object Model (POM)
