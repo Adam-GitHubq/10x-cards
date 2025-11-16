@@ -6,7 +6,7 @@ import * as path from "path";
  * Read environment variables from .env.test file for local development
  * In CI, variables are provided by GitHub Actions environment
  */
-if (!process.env.CI) {
+if (!process.env.GITHUB_ACTIONS) {
   dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 }
 
