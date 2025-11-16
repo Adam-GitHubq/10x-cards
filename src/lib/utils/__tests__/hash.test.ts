@@ -3,22 +3,23 @@ import { computeMD5 } from "../hash";
 
 describe("computeMD5", () => {
   describe("Hashowanie poprawnego tekstu", () => {
-    it("should compute correct MD5 hash for 'Hello World'", async () => {
+    it("should compute correct SHA-256 hash for 'Hello World'", async () => {
       const input = "Hello World";
 
       const result = await computeMD5(input);
 
+      // SHA-256 hash for "Hello World"
       expect(result).toEqual({
-        output: "b10a8db164e0754105b7a99be72e3fe5",
+        output: "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
       });
     });
 
-    it("should return hash as 32 character hex string", async () => {
+    it("should return hash as 64 character hex string", async () => {
       const input = "Test string";
 
       const result = await computeMD5(input);
 
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
   });
 
@@ -37,7 +38,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("should handle very long text efficiently", async () => {
@@ -58,8 +59,9 @@ describe("computeMD5", () => {
 
       const result = await computeMD5(input);
 
+      // SHA-256 hash for "Zażółć gęślą jaźń"
       expect(result).toEqual({
-        output: "25af8716284fc8efbab13dbb3b517085",
+        output: "bc5348fd7c2dd8bbf411f0b9268265f7c2e0d31ebf314695882b8170c7e1e9d7",
       });
     });
 
@@ -69,7 +71,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
   });
 
@@ -180,7 +182,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("should handle whitespace characters", async () => {
@@ -189,7 +191,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("should handle newlines and tabs", async () => {
@@ -198,7 +200,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
 
     it("should handle special characters", async () => {
@@ -207,7 +209,7 @@ describe("computeMD5", () => {
       const result = await computeMD5(input);
 
       expect(result.output).toBeDefined();
-      expect(result.output).toMatch(/^[a-f0-9]{32}$/);
+      expect(result.output).toMatch(/^[a-f0-9]{64}$/);
     });
   });
 

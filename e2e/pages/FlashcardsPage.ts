@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { Page, Locator } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 /**
@@ -146,7 +146,7 @@ export class FlashcardsPage extends BasePage {
 
     // Użyj evaluate aby kliknąć przez JavaScript (omija problemy z viewport)
     await submitButton.evaluate((button) => (button as HTMLElement).click());
-    
+
     // Czekaj na odpowiedź
     await responsePromise;
 
@@ -188,7 +188,7 @@ export class FlashcardsPage extends BasePage {
 
     // Użyj evaluate aby kliknąć przez JavaScript (omija problemy z viewport)
     await submitButton.evaluate((button) => (button as HTMLElement).click());
-    
+
     // Czekaj na odpowiedź
     await responsePromise;
 
@@ -213,7 +213,7 @@ export class FlashcardsPage extends BasePage {
 
     // Użyj evaluate aby kliknąć przez JavaScript (omija problemy z viewport)
     await confirmButton.evaluate((button) => (button as HTMLElement).click());
-    
+
     // Czekaj na odpowiedź
     await responsePromise;
 
@@ -372,7 +372,10 @@ export class FlashcardsPage extends BasePage {
    * Weryfikuje czy wyświetlany jest komunikat o pustej liście
    */
   async hasEmptyState(): Promise<boolean> {
-    return await this.page.getByTestId("flashcards-empty-state").isVisible().catch(() => false);
+    return await this.page
+      .getByTestId("flashcards-empty-state")
+      .isVisible()
+      .catch(() => false);
   }
 
   /**
@@ -393,4 +396,3 @@ export class FlashcardsPage extends BasePage {
     return isVisible ? await errorLocator.textContent() : null;
   }
 }
-
