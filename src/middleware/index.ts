@@ -2,24 +2,6 @@ import { defineMiddleware } from "astro:middleware";
 
 import { createSupabaseServerInstance } from "../db/supabaseServer.ts";
 
-// Ścieżki publiczne - dostępne bez logowania
-const PUBLIC_PATHS = [
-  // Strony auth
-  "/auth/login",
-  "/auth/register",
-  "/auth/reset",
-  "/auth/reset/confirm",
-  // API auth endpoints
-  "/api/auth/login",
-  "/api/auth/signup",
-  "/api/auth/logout",
-  "/api/auth/reset/request",
-  "/api/auth/reset/complete",
-  "/api/auth/session",
-  // Inne publiczne ścieżki
-  "/",
-];
-
 // Ścieżki chronione - wymagają zalogowania
 const PROTECTED_PATHS = ["/generate", "/flashcards", "/settings"];
 

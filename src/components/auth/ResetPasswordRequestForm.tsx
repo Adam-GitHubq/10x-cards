@@ -47,6 +47,7 @@ export default function ResetPasswordRequestForm({ onSuccess }: ResetPasswordReq
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
+      // eslint-disable-next-line no-console
       console.info("[Auth] Reset password request payload (mock)", values);
 
       startTransition(() => {

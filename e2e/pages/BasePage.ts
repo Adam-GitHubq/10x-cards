@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page } from "@playwright/test";
 
 /**
  * BasePage - klasa bazowa dla wszystkich Page Objects
@@ -18,7 +18,7 @@ export class BasePage {
    * Czeka na załadowanie strony
    */
   async waitForPageLoad() {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -35,4 +35,3 @@ export class BasePage {
     await this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: true });
   }
 }
-

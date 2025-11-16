@@ -1,5 +1,6 @@
-import { test as base } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+/* eslint-disable react-hooks/rules-of-hooks */
+import { test as base } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
 
 /**
  * Fixtures - rozszerzenie podstawowych funkcjonalności testowych Playwright
@@ -19,5 +20,4 @@ export const test = base.extend<AuthFixtures>({
   },
 });
 
-export { expect } from '@playwright/test';
-
+export { expect } from "@playwright/test";

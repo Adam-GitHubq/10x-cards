@@ -34,11 +34,13 @@ export default function UserMenu({ user }: UserMenuProps) {
         // Przekieruj do strony logowania po wylogowaniu
         window.location.href = "/auth/login";
       } else {
+        // eslint-disable-next-line no-console
         console.error("[Auth] Logout failed:", response.status);
         alert("Nie udało się wylogować. Spróbuj ponownie.");
         setIsLoggingOut(false);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("[Auth] Logout error:", error);
       alert("Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.");
       setIsLoggingOut(false);
@@ -88,4 +90,3 @@ export default function UserMenu({ user }: UserMenuProps) {
     </DropdownMenu>
   );
 }
-

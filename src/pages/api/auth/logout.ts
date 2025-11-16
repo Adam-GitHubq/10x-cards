@@ -28,6 +28,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     });
 
     if (supabaseCookieNames.length === 0) {
+      // eslint-disable-next-line no-console
       console.warn("[Auth Logout] No Supabase cookies found - user may already be logged out");
     } else {
       // Usuń każdy cookie Supabase
@@ -35,7 +36,10 @@ export const POST: APIRoute = async ({ cookies, request }) => {
         cookies.delete(name, { path: "/" });
       });
 
-      console.log(`[Auth Logout] Removed ${supabaseCookieNames.length} Supabase cookie(s): ${supabaseCookieNames.join(", ")}`);
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Auth Logout] Removed ${supabaseCookieNames.length} Supabase cookie(s): ${supabaseCookieNames.join(", ")}`
+      );
     }
 
     // Sukces - zwróć 204 No Content (bez treści)
@@ -43,6 +47,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       status: 204,
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("[Auth Logout] Unexpected error:", error);
 
     // Nawet jeśli wystąpił błąd, zwróć sukces
@@ -52,4 +57,3 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     });
   }
 };
-

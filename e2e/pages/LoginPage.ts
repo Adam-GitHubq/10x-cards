@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 /**
  * LoginPage - Page Object dla strony logowania
@@ -13,11 +13,11 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    
+
     // Inicjalizacja lokatorów
-    this.emailInput = page.getByLabel('E-mail', { exact: true });
-    this.passwordInput = page.getByLabel('Hasło', { exact: true });
-    this.submitButton = page.getByRole('button', { name: 'Zaloguj się' });
+    this.emailInput = page.getByLabel("E-mail", { exact: true });
+    this.passwordInput = page.getByLabel("Hasło", { exact: true });
+    this.submitButton = page.getByRole("button", { name: "Zaloguj się" });
     this.errorMessage = page.locator('[role="status"]');
   }
 
@@ -25,7 +25,7 @@ export class LoginPage extends BasePage {
    * Nawiguje do strony logowania
    */
   async navigate() {
-    await this.goto('/auth/login');
+    await this.goto("/auth/login");
   }
 
   /**
@@ -65,4 +65,3 @@ export class LoginPage extends BasePage {
     return await this.errorMessage.textContent();
   }
 }
-

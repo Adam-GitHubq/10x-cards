@@ -5,6 +5,7 @@
  * w kontekście generowania fiszek dla aplikacji 10xCards.
  */
 
+/* eslint-disable no-console */
 import { OpenRouterService, type ResponseFormat } from "../openrouter.service";
 import type { FlashcardProposalDto } from "../../../types";
 

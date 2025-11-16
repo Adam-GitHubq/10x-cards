@@ -19,7 +19,9 @@ const defaultValues: LoginFormValues = {
   password: "",
 };
 
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm({ onSuccess: _onSuccess }: LoginFormProps) {
+  // onSuccess prop is reserved for future use
+  void _onSuccess;
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues,
@@ -79,10 +81,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
           // Przekieruj po krótkiej chwili (aby użytkownik zobaczył komunikat sukcesu)
           setTimeout(() => {
-            window.location.href = nextUrl;
+            window.location.assign(nextUrl);
           }, 500);
         });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("[Auth] Login error:", error);
         setStatus({
           type: "error",

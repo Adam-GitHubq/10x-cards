@@ -1,45 +1,10 @@
 import type { APIRoute } from "astro";
-import { AuthApiError } from "@supabase/supabase-js";
 
 import { signupSchema } from "../../../lib/validation/authSchemas.ts";
-import type { AuthErrorCode, AuthOk, ProblemJson, SessionResponse } from "../../../types.ts";
+import { mapSignupError } from "../../../lib/auth/errorMapper.ts";
+import type { AuthOk, ProblemJson, SessionResponse } from "../../../types.ts";
 
 export const prerender = false;
-
-/**
- * Mapuje błędy Supabase Auth na nasze kody błędów.
- */
-function mapSupabaseError(error: unknown): { errorCode: AuthErrorCode; message: string } {
-  if (error instanceof AuthApiError) {
-    // Mapowanie specyficznych błędów Supabase
-    if (error.message.includes("User already registered")) {
-      return {
-        errorCode: "email_in_use",
-        message: "Konto z tym adresem e-mail już istnieje.",
-      };
-    }
-
-    if (error.message.includes("Password should be at least")) {
-      return {
-        errorCode: "invalid_input",
-        message: "Hasło jest zbyt słabe. Użyj co najmniej 8 znaków z literą i cyfrą.",
-      };
-    }
-
-    if (error.status === 429) {
-      return {
-        errorCode: "rate_limited",
-        message: "Zbyt wiele prób – spróbuj ponownie później.",
-      };
-    }
-  }
-
-  // Domyślny błąd
-  return {
-    errorCode: "unknown",
-    message: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
-  };
-}
 
 /**
  * POST /api/auth/signup
@@ -88,7 +53,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (error) {
-      const { errorCode, message } = mapSupabaseError(error);
+      const { errorCode, message } = mapSignupError(error);
       const response: ProblemJson = {
         success: false,
         errorCode,
@@ -130,12 +95,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Weryfikacja email wyłączona - użytkownik jest automatycznie zalogowany
+    if (!data.user) {
+      const response: ProblemJson = {
+        success: false,
+        errorCode: "unknown",
+        message: "Nie udało się utworzyć użytkownika.",
+      };
+
+      return new Response(JSON.stringify(response), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const response: AuthOk<SessionResponse> = {
       success: true,
       data: {
         user: {
-          id: data.user!.id,
-          email: data.user!.email ?? null,
+          id: data.user.id,
+          email: data.user.email ?? null,
         },
       },
     };
@@ -146,6 +124,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   } catch (error) {
     // Obsługa nieoczekiwanych błędów
+    // eslint-disable-next-line no-console
     console.error("[Auth Signup] Unexpected error:", error);
 
     const response: ProblemJson = {
@@ -160,4 +139,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

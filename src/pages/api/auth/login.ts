@@ -1,46 +1,10 @@
 import type { APIRoute } from "astro";
-import { z } from "zod";
-import { AuthApiError } from "@supabase/supabase-js";
 
 import { loginSchema } from "../../../lib/validation/authSchemas.ts";
-import type { AuthErrorCode, AuthOk, ProblemJson, SessionResponse } from "../../../types.ts";
+import { mapLoginError } from "../../../lib/auth/errorMapper.ts";
+import type { AuthOk, ProblemJson, SessionResponse } from "../../../types.ts";
 
 export const prerender = false;
-
-/**
- * Mapuje błędy Supabase Auth na nasze kody błędów.
- */
-function mapSupabaseError(error: unknown): { errorCode: AuthErrorCode; message: string } {
-  if (error instanceof AuthApiError) {
-    // Mapowanie specyficznych błędów Supabase
-    if (error.message.includes("Invalid login credentials")) {
-      return {
-        errorCode: "invalid_credentials",
-        message: "Nieprawidłowy e-mail lub hasło.",
-      };
-    }
-
-    if (error.message.includes("Email not confirmed")) {
-      return {
-        errorCode: "email_not_verified",
-        message: "Adres e-mail nie został zweryfikowany. Sprawdź swoją skrzynkę pocztową.",
-      };
-    }
-
-    if (error.status === 429) {
-      return {
-        errorCode: "rate_limited",
-        message: "Zbyt wiele prób – spróbuj ponownie później.",
-      };
-    }
-  }
-
-  // Domyślny błąd
-  return {
-    errorCode: "unknown",
-    message: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
-  };
-}
 
 /**
  * POST /api/auth/login
@@ -77,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (error) {
-      const { errorCode, message } = mapSupabaseError(error);
+      const { errorCode, message } = mapLoginError(error);
       const response: ProblemJson = {
         success: false,
         errorCode,
@@ -109,6 +73,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   } catch (error) {
     // Obsługa nieoczekiwanych błędów
+    // eslint-disable-next-line no-console
     console.error("[Auth Login] Unexpected error:", error);
 
     const response: ProblemJson = {
@@ -123,4 +88,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

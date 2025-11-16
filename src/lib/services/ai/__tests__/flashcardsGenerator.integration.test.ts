@@ -11,6 +11,8 @@
  * Testy są oznaczone jako .skip - usuń .skip aby je uruchomić.
  */
 
+/* eslint-disable no-console */
+
 import { describe, it, expect } from "vitest";
 import { generateFlashcardProposals, FlashcardGenerationError } from "../flashcardsGenerator";
 

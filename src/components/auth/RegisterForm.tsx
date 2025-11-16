@@ -24,7 +24,9 @@ const defaultValues: SignupFormValues = {
   confirmPassword: "",
 };
 
-export default function RegisterForm({ onSuccess }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess: _onSuccess }: RegisterFormProps) {
+  // onSuccess prop is reserved for future use
+  void _onSuccess;
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues,
@@ -90,10 +92,11 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           // Przekieruj do generatora fiszek
           setTimeout(() => {
-            window.location.href = "/generate";
+            window.location.assign("/generate");
           }, 500);
         });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("[Auth] Signup error:", error);
         setStatus({
           type: "error",

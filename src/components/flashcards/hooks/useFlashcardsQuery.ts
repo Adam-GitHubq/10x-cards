@@ -67,7 +67,8 @@ export function useFlashcardsQuery(filters: FlashcardsFiltersVM) {
   }, []);
 
   useEffect(() => {
-    abortRef.current.cancelled = false;
+    const currentAbort = abortRef.current;
+    currentAbort.cancelled = false;
 
     const fetchData = async () => {
       await runFetch(filters);
@@ -76,7 +77,8 @@ export function useFlashcardsQuery(filters: FlashcardsFiltersVM) {
     fetchData();
 
     return () => {
-      abortRef.current.cancelled = true;
+      // Use the captured ref value to avoid stale closure
+      currentAbort.cancelled = true;
     };
   }, [filters, runFetch]);
 

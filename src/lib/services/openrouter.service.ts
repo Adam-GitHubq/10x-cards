@@ -663,6 +663,7 @@ export class OpenRouterService {
    */
   private _logError(error: Error, context?: unknown): void {
     // TODO: Integracja z systemem logowania
+    // eslint-disable-next-line no-console
     console.error("[OpenRouterService]", error.message, context);
   }
 }
